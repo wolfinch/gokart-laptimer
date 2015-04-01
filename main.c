@@ -38,7 +38,7 @@ void main()
         if(devId && !cfgMode) {
             sendFrame(devId, DATA_KEY_1);
         }
-        __delay_ms(60);
+        //__delay_ms(60);
     }
 }
 

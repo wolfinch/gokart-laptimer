@@ -121,25 +121,28 @@ CCP1CON = 0b00110000 ;
 
 }
 
+/* Modified NEC format. Reduced header time from 9ms to 6ms, abandoned command. 
+ * To keep the pulse duration within ~30 Ms
+ */
 void sendFrame(unsigned char address, unsigned char command) // this routine send the whole frame including 9ms leading pulse 4.5ms space address ~address command ~command end of message bit.
 {	
 	TMR2 = 0x00;					//clear the TMR2 register before we start generating 38Khz Signal on the GPIO
 	CCP1CONbits.CCP1M = 0xC;		//put The CCP module into PWM mode , the Duty is 50% and freqeucny is 38Khz as allredy set, 
-	__delay_us(8999);				//wait for ~9ms this rountine will delay for 8.999 ms + (3*500ns) = ~9ms (500ns is the instruction execution time at 8Mhz) and next instruciton will take 3 ins cycle to execute.
+	__delay_us(5999);				//wait for ~9ms this rountine will delay for 8.999 ms + (3*500ns) = ~9ms (500ns is the instruction execution time at 8Mhz) and next instruciton will take 3 ins cycle to execute.
 	CCP1CONbits.CCP1M = 0x0;		//turn off the CCP module stop generating 38Khz singal
 	__delay_us(4490);				//wait for ~4.5ms  the value 4490 is compensated with the next instrucitons execution timing , it helps to keep precise timing. as described avobe
 	
 	sendByte(address);				//send address byte. (sendByte functions should not be called independently, only sendFrame should call it)
 	sendByte(~address);				//send address logical invert 
-	sendByte(command);				//send command
-	sendByte(~command);				//send command logical invert
+	//sendByte(command);				//send command
+	//sendByte(~command);				//send command logical invert
 	
 									//addres and command is sent now send the end of message bit
 	TMR2 = 0x00;					//clear the TMR2 register before we start generating 38Khz Signal on the GPIO
 	CCP1CONbits.CCP1M = 0xC;		//Start generating 38Khz singal
 	__delay_us(561);				//wait for ~562.5us again value 561 is compensated with the next instrucitons timing
 	CCP1CONbits.CCP1M = 0x0;		//stop generating 38Khz singal.
-	__delay_ms(40);					// wait for the Data Frame time. 
+	__delay_us(4490);					// wait for the Data Frame time. 
 }
 
 void sendByte(unsigned char byte)	// this function is called only by the sendFrame , to send each byte of data total 4bytes.

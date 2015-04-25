@@ -1,0 +1,38 @@
+Install:
++++++++++
+
+1. Install easyphp-Devserver.exe
+2. Once installed, open easyphp by clicking the taskbar easyphp icon. Verify the apache is started
+3. Right click the easyphp icon (in the step-2), on the menu go submenu 'configure'->'apache'. 
+	3a) it will open a notepad file, search for "Listen 127.0.0.1:80". change it to "Listen *:80"
+4. Copy all the files in 'gokart-web' folder to "C:\Program Files (x86)\EasyPHP-DevServer-14.1VC11\data\localweb\" folder
+5. Done and ready to go. 
+
+Usage:
+=======
+
+To test:
+A) Test local server functionality
+1. open browser
+2. type 'localhost/single_session.php' -> Verify it gives the command center page
+3. On another tab, open 'localhost/results.php' -> Verify it gives the results page.
+
+B) Test the server is reachable in other machines (PC/laptop)
+
+1. On another system (laptop, desktop) on the same network, 
+	try the above steps by giving 'IP' of Server (the machine with easyphp installed) 
+	in place of localhost and verify above
+
+C) Test the transponder/Detector functionality
+
+1. Plug in the raspberry pi to power source and ethernet cable
+2. Verify the raspberry pi comes up and picks up IP
+3. Find the raspberry Pi IP and put the IP in the "server IP" field in the command center page.
+4. Turn on the transmitter and verify the device id, this can be changed later
+5. From the command center page, enter a "name" of driver (optional) and click start button
+6. Verify the start button turns red and no error is given.
+7. Move the transmitter to the sensor proximity with min 10 Sec (Min lap time, configurable) and verify the laptimes in Results page 
+ 
+
+# Ips of systems in the network can be found using android app "fing" with the phone connected to same network
+

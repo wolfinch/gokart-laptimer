@@ -1,0 +1,52 @@
+#!/bin/sh
+# Startup script for the gokartd Server
+#
+# chkconfig: - 50 50
+#
+# description: gokartd gathers statistics about the system stores this information
+# processname: gokartd
+# pidfile: /etc/gokart/var/run/collectd.pid
+# config:  /etc/gokart/etc/collectd.conf
+# command: /etc/gokart/sbin/collectd
+# rundata: /etc/gokart/data/
+CONFIG_FILE=/etc/gokart/gokartd.conf
+PID_FILE=/etc/gokart/var/run/gokartd.pid
+LOCK_FILE=/etc/gokart/var/run/lock
+CMD_FILE=/etc/gokart/sbin/gokartd
+RUN_DATA=/etc/gokart/data/
+case "$1" in
+start)
+# Starts the gokartd daemon
+#echo "cleaning up"
+#echo $RUN_DATA/*
+#rm $RUN_DATA/*
+echo "Starting gokartd"
+$CMD_FILE `cat $CONFIG_FILE`
+;;
+stop)
+# stops the daemon bt cating the pidfile
+echo "stopping gokartd"
+kill -9 `cat $PID_FILE`
+#echo "cleaning up"
+#echo $RUN_DATA/*
+#rm $RUN_DATA/*
+rm $PID_FILE
+rm $LOCK_FILE
+;;
+restart)
+## Stop the service regardless of whether it was
+## running or not, start it again.
+echo "Restarting gokartd"
+$0 stop
+$0 start
+;;
+reload)
+# reloads the config file by sending HUP
+echo "Reloading config"
+kill -HUP `cat $PID_FILE`
+;;
+*)
+echo "Usage: gokartd (start|stop|restart|reload)"
+exit 1
+;;
+esac

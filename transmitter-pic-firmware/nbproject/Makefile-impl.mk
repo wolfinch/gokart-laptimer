@@ -24,7 +24,7 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=GoCart_IR_Tx.X
+PROJECTNAME=GoKartLapTimer-IRXmit.X
 
 # Active Configuration
 DEFAULTCONF=default

@@ -184,7 +184,6 @@ static int gokart_digest_code(char *code)
         if (backup == NULL)
             return (-1);
 
-        //rep = atoi(strtok(backup, " "));
         rep = strtol(strtok(backup, " "), NULL, 16);
         strtok(NULL, " ");
         button = strtok(NULL, " ");
@@ -194,6 +193,9 @@ static int gokart_digest_code(char *code)
             free(backup);
             return (0);
         }
+
+        //rep will be N(~N), we just need N
+        rep = rep >> 4;
 
         log_print ("LOG: button_code: %x, but_id: %s, remote: %s\n", rep, button, remote);
 

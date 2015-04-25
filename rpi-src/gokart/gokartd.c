@@ -184,7 +184,8 @@ static int gokart_digest_code(char *code)
         if (backup == NULL)
             return (-1);
 
-        rep = atoi(strtok(backup, " "));
+        //rep = atoi(strtok(backup, " "));
+        rep = strtol(strtok(backup, " "), NULL, 16);
         strtok(NULL, " ");
         button = strtok(NULL, " ");
         remote = strtok(NULL, "\n");

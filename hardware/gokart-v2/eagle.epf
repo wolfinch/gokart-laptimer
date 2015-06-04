@@ -352,7 +352,7 @@ UsedLibrary="/Applications/EAGLE-7.3.0/lbr/elektro/e-elektro-zeichnungsrahmen.lb
 
 [Win_1]
 Type="Control Panel"
-Loc="1 25 886 610"
+Loc="1 25 1150 773"
 State=2
 Number=0
 

@@ -55,6 +55,8 @@ uint8_t nrf24_payload_length();
 /* power management */
 void    nrf24_powerUpRx();
 void    nrf24_powerUpTx();
+void    nrf24_fastPowerUpRx();
+void    nrf24_fastPowerUpTx();
 void    nrf24_powerDown();
 
 /* low level interface ... */

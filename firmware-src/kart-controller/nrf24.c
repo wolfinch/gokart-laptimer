@@ -172,7 +172,7 @@ void nrf24_send(uint8_t* value)
     nrf24_ce_digitalWrite(LOW);
      
     /* Set to transmitter mode , Power up if needed */
-    nrf24_powerUpTx();
+    nrf24_fastPowerUpTx();
 
     /* Do we really need to flush TX fifo each time ? */
     #if 1
@@ -326,6 +326,17 @@ uint8_t nrf24_lastMessageStatus()
     }
 }
 
+/* Use this only when radio is already in PWR_UP state*/
+void nrf24_fastPowerUpRx()
+{     
+    nrf24_ce_digitalWrite(LOW);    
+    nrf24_configRegister(CONFIG,nrf24_CONFIG|((1<<PWR_UP)|(1<<PRIM_RX)));    
+    nrf24_ce_digitalWrite(HIGH);
+    
+    // This will give a little relaxation time (ideally radio needs 100uS)
+    nrf24_configRegister(STATUS, (1 << RX_DR) | (1 << TX_DS) | (1 << MAX_RT));
+}
+
 void nrf24_powerUpRx()
 {     
     nrf24_csn_digitalWrite(LOW);
@@ -339,6 +350,14 @@ void nrf24_powerUpRx()
     nrf24_ce_digitalWrite(HIGH);
     
     __delay_ms(5);
+}
+
+/*  Use this only when radio is already in PWR_UP state*/
+void nrf24_fastPowerUpTx() {   
+    nrf24_configRegister(CONFIG, nrf24_CONFIG |((1<<PWR_UP)|(0<<PRIM_RX))); 
+
+    // This will give a little relaxation time (ideally radio needs 100uS)
+    nrf24_configRegister(STATUS, (1 << RX_DR) | (1 << TX_DS) | (1 << MAX_RT)); 
 }
 
 void nrf24_powerUpTx()

@@ -32,6 +32,12 @@ volatile uint8_t hall_detect = false;
 volatile gim_timeval ir_cur_hit;
 volatile gim_timeval hall_cur_hit;
 volatile uint16_t jiffies = 0x0; /// Jiffies are the Timebase (TMR1)Interrupt count
+volatile kart_data_t data[MAX_PAYLOAD_COUNT]; // Payload list to send
+volatile int8_t      data_count = 0;
+
+volatile uint8_t     battery_level = 0xff;
+uint8_t  IR_state = true;       //IR Pin State
+
 //unsigned short tmr0IntCount = 0x0;
 
 /* Handle switch event
@@ -161,17 +167,28 @@ handleIRsignal(void) {
     ir_state_pos++; //UP state-machine, if a valid state was detected.    
 }
 
+inline void
+handle_hall_cmd(void) {
+    if (data_count >= MAX_PAYLOAD_COUNT) {
+        return;
+    }
+
+    hall_cur_hit.sec    = jiffies;
+    hall_cur_hit.m_sec  = (TMR1H - 0xB); // Adjust preset;
+    data[data_count].battery_level = battery_level;
+    data[data_count].time = hall_cur_hit;
+    data[data_count].dev_id = devId;
+    data[data_count].detect_type = HALL;
+    data_count++; //new data to send
+}
+
 void interrupt Isr(void)		
 {   
-    static short IR_state = true;
-
     GIE  = 0;              // Global interrupt disable
     if (INTE && INTF) {
         /* External INT, HALL SENSOR*/
+        handle_hall_cmd();
         hall_detect = true;
-        hall_cur_hit.sec = jiffies; // Record Time
-        hall_cur_hit.m_sec = (TMR1H - 0xB); // Adjust preset        
-        
         INTF        = false;
     } else if (INTCONbits.RABIE && INTCONbits.RABIF)	{	// check the interrupt on change flag
         //INTCONbits.RABIE = 0;

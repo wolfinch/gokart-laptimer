@@ -44,7 +44,6 @@ UART_Init(const long int baudrate)
 #endif
   
     BRGH  = 0;  // To support 9600@4Mhz
-    BRG16 = 0;
     SYNC = 0; //Selecting Asynchronous Mode
     SPBRG = 25; //Writing SPBRG register
     SPEN = 1; //Enables Serial Port
@@ -105,20 +104,10 @@ inline void nrf24_csn_digitalWrite(uint8_t state)
 }
 
 nrf24_mod_init() {
-    // PRX
-    //uint8_t tx_mac[5] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-    //uint8_t rx_mac[5] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-    
-    // PTX
-    //uint8_t rx_mac[5] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-    //uint8_t tx_mac[5] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-
-
-    //uint8_t tx_mac[5] = {0xD7, 0xD7, 0xD7, 0xD7, 0xD7};
     uint8_t     rx_mac[5] = {"Node"};
-    uint8_t     tx_mac[5] = {"Base0"};
+    uint8_t     tx_mac[5] = {"Base0"};    
+    rx_mac[4]   =devId+48;          // Make unique RxMac with nodeid
     
-    rx_mac[4]   =devId+48;
     /* SPI config*/
     TRISMOSI 	=   0;		//SPI_MOSI    
     TRISMISO 	=   1;		//SPI_MISO
@@ -147,11 +136,14 @@ nrf24_mod_init() {
 
 uint8_t 
 read_battery_level (void) {
+    ADON    = 1;
+    ADIF    = 0; // Clear Flag indicating conversion.    
     GO_DONE = 1 ;        // Start ADC conversion for Channel AN3, connected to 9V bat
     // wait for ADC to complete
     while (GO_DONE);
 
-    ADIF    = 0; // clear flag
+    ADON    = 0;        // ADC OFF
+    ADIF    = 0; // clear flag   
     // Read ADC. Interested in Hi 8 bits (ADRESH)
     return ADRESH;  // Do logic to convert to readable battery level
 }

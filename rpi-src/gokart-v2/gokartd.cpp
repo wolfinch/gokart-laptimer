@@ -19,9 +19,9 @@ uint8_t     tx_addr[6] = {"Node1"};
 uint8_t     rx_addr[6] = {"Base0"};
 
 kart_data_t rx_data[MAX_PAYLOAD_COUNT];
-int         rx_data_count = 0;
+uint16_t         rx_data_count = 0;
 gim_response_list_t *resp_list_head = NULL;
-int         resp_list_cnt = 0;
+uint16_t         resp_list_cnt = 0;
 
 void resp_list_remove (gim_response_list_t *node) {
     if (node) {
@@ -53,11 +53,6 @@ RF24 radio(25, 0);      // SPIDEV constructor, spidev handles CSN
 void gokart_add_response (kart_data_t *rx_data) ;
 
 void gokart_rx () {
-    // Wait here until we get data
-
-    //while ( ! radio.available() ) {
-    //    usleep (100);
-    //}
 
     if (rx_data_count >= MAX_PAYLOAD_COUNT) {
         printf ("ERROR: MAX payload count exceed \n");
@@ -109,18 +104,17 @@ void gokart_send_response(void) {
 
         //Set the Tx addr for the resp
         tx_addr[4] = uint8_t(48 + (resp_list->tx_data.dev_id));
-        printf("tx_addr: %s, %d\n", tx_addr, (uint8_t)(resp_list->tx_data.dev_id));
 
         radio.openWritingPipe(tx_addr);
         bool ok = radio.write( &(resp_list->tx_data), sizeof(kart_data_t));
 
         if (!ok){
-            printf("failed.\n");
+            printf("failed to send response! tx_addr: %s\n", tx_addr);
             radio.print_observe_tx();
             resp_list->retry_count++;
             resp_list = resp_list->pnext;
         } else {
-            printf ("Success \n");
+            printf ("Response success! tx_addr: %s\n", tx_addr);
             tmp = resp_list;
             resp_list = resp_list->pnext;
             resp_list_remove(tmp);

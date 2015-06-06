@@ -135,16 +135,15 @@ void nrf24_send_detect_data(void ) {
 void
 handle_ir_cmd (void) {
     static gim_timeval ir_first_hit, ir_last_hit;
-    static uint8_t     is_ir_first_hit     = true;
+    //static uint8_t     is_ir_first_hit     = true;
     static uint8_t     is_ir_lap_valid     = true;
 
     if (ir_cmd_valid) {
         ir_cmd_valid = false;
-        xprintf("*** Valid IR Signal!!***\r\n");
-        if (is_ir_first_hit || ir_last_hit.sec + 4 < ir_cur_hit.sec) {
+        if (is_ir_lap_valid || ir_last_hit.sec + 4 < ir_cur_hit.sec) {
             // This is the first hit of a new lap
             ir_last_hit = ir_first_hit = ir_cur_hit;
-            is_ir_first_hit =  is_ir_lap_valid = false;           // Marking first IR hit since we are operational
+            is_ir_lap_valid = false;           // Marking first IR hit since we are operational
         } else { //if the signal comes within 2Sec, advance the window
             ir_last_hit = ir_cur_hit;
         }
@@ -154,7 +153,8 @@ handle_ir_cmd (void) {
             xprintf("ERROR: data exceed max\n\r");
             return;
         }
-        
+
+        xprintf("*** Valid IR lap!!***\r\n");
         is_ir_lap_valid = true;
         data[data_count].time.sec = ir_first_hit.sec/2 + ir_cur_hit.sec/2 + 
                 (ir_first_hit.sec%2 | ir_cur_hit.sec%2); // Take avg. (adjust reminder =>.5+.5 = .5)
@@ -234,12 +234,12 @@ void main() {
 //    cont_wave_test();
 	while(1)
     {
+        handle_ir_cmd();
+
         if (hall_detect) { //Hall detected
             hall_detect = 0;
             xprintf("*** Hall Signal Received!!***\r\n");
         }
-
-        handle_ir_cmd();
 
         if (data_count > 0) {
             nrf24_send_detect_data();

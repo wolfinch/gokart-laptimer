@@ -89,8 +89,8 @@ void handleSwitch() {
 }
 
 /* The Fixed Frame beacon format uses Modified NEC code */
-/* |---4MsPulse---|---2.5MsGap|--562uS(1)--|--562uS(0)--|--562uS(1)--|--1682uS(0)--|--562uS(1)--|*/
-/* |--------Header------------|----------1--------------|------------0-------------|--Trailer---|*/
+/* |---4MsPulse(1)---|---2.5MsGap(0)--|--562uS(1)--|--562uS(0)--|--562uS(1)--|--1682uS(0)--|--562uS(1)--|--GAP4.5Ms|*/
+/* |--------------Header--------------|----------1--------------|------------0-------------|--Trailer---|*/
 /* Proto ladder:
  *  ppos = 0 Reset
  *  ppos = 1 4Ms pulse
@@ -150,8 +150,8 @@ handleIRsignal(void) {
             return;
         default:
             pktstart :
-                    // Resets, Try to see header presense
-                    ir_state_pos = 0;
+            // Resets, Try to see header presense
+            ir_state_pos = 0;
             if (SENSOR_IR == 0) { //Yes, this could be start of pkt
                 rangehi = TMR4mSHI;
                 rangelo = TMR4mSLO;
@@ -164,6 +164,8 @@ handleIRsignal(void) {
     }
 
     TMR0 = rangehi; //Restart with new Hi
+    INTCONbits.T0IF = 0;
+    INTCONbits.T0IE = 1;
     ir_state_pos++; //UP state-machine, if a valid state was detected.    
 }
 

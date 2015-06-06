@@ -19,6 +19,7 @@ extern volatile uint8_t devId;
 extern volatile uint8_t cfgMode;
 extern volatile uint8_t ShouldSend;
 extern volatile uint8_t ir_cmd_valid;
+extern volatile uint8_t ir_cmd;
 extern volatile uint8_t hall_detect;
 extern volatile uint16_t jiffies;
 
@@ -59,16 +60,6 @@ void nrf_print_details() {
      
 }
 
-// Rx Test:
-
-void rx_test(void) {
-    uint8_t data[5] = {0};
-    if (nrf24_dataReady()) {
-        nrf24_getData(&data);
-        xprintf("Rx data: 0x%x 0x%x 0x%x 0x%x\r\n", data[0], data[1], data[2], data[3]);
-    }
-}
-
 void nrf24_send_detect_data(void ) {
     kart_data_t rx_data;
     uint8_t retry;
@@ -84,7 +75,12 @@ void nrf24_send_detect_data(void ) {
         
         nrf24_send((uint8_t *) (&data[d_cnt]));
         while (nrf24_isSending());
-
+        /* Make analysis on last tranmission attempt */
+        if (nrf24_lastMessageStatus() == NRF24_MESSAGE_LOST) {
+            xprintf("Message is lost ...\r\n");
+            return;
+        }
+        
 #if 0
         /* Wait for transmission to end */
         xprintf("nrf24_isSending\r\n");
@@ -164,6 +160,7 @@ handle_ir_cmd (void) {
         data[data_count].battery_level = battery_level;
         data[data_count].dev_id = devId;
         data[data_count].detect_type = IR;
+        data[data_count].detect_code = ir_cmd;
         data_count++; //new data to send
         return;
     }

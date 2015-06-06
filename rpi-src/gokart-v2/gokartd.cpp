@@ -171,12 +171,12 @@ int main ()
             gokart_rx();
         }
 
-        if (rx_data_count) {
-            gokart_process_data();
-        }
-
         if (resp_list_head) {
             gokart_send_response();
+        }
+
+        if (rx_data_count) {
+            gokart_process_data();
         }
     }
 }

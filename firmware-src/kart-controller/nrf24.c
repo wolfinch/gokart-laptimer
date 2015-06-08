@@ -172,7 +172,7 @@ void nrf24_send(uint8_t* value)
     nrf24_ce_digitalWrite(LOW);
      
     /* Set to transmitter mode , Power up if needed */
-    nrf24_fastPowerUpTx();
+    nrf24_powerUpTx();
 
     /* Do we really need to flush TX fifo each time ? */
     #if 1

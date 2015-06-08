@@ -21,10 +21,10 @@ typedef struct gim_timeval_ {
 typedef struct gim_kart_data_ {
     gim_timeval    time;
     uint8_t     battery_level;
-    uint8_t     detect_type   :1;
     uint8_t     dev_id        :5;
-    uint8_t     padding       :2;
-}PACKED kart_data_t;
+    uint8_t     detect_type   :1;
+    uint8_t     detect_code   :2;   //Used for IR code, section detection
+}kart_data_t;
 
 typedef struct gim_response_list_ {
     kart_data_t tx_data;

@@ -122,7 +122,9 @@ extern "C" {
 #define TMR4mSLO   230      // 3.2MS, 50 Ticks, Preset TMR REg to Max + 50 => 180 + 50 = 230   
 #define TMR2mS5LO  239      // 2.0Ms, 31 Ticks = 239
 #define TMR562uSLO 251           // 449uS = 7.01ticks, 
-#define TMR1mS6LO  244          // 1.344Ms    = 21 Ticks,     
+#define TMR1mS6LO  244          // 1.344Ms    = 21 Ticks, 
+#define TMR1mS6LO562  230          // 1.344Ms    = 21 Ticks,     
+    
 /*********TMR1 Time macros*********/
 	
 /******************************************************************************/

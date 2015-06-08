@@ -27,7 +27,7 @@ volatile uint8_t cfgMode= 0x0;
 volatile uint8_t tmr0IntCount = 0x0;
 volatile uint8_t ShouldSend = 0;
 volatile uint8_t ir_cmd_valid = false;
-volatile uint8_t ir_cmd       = 0;
+volatile uint8_t ir_cur_code  = 0;
 volatile uint8_t ir_state_pos = 0;
 volatile uint8_t hall_detect = false;
 volatile gim_timeval ir_cur_hit;
@@ -106,7 +106,7 @@ void handleSwitch() {
 #if 1
 void
 handleIRsignal(void) {
-    static uint8_t rangehi, rangelo;
+    static uint8_t rangehi, rangelo, ir_cmd;
     uint8_t tstamp = TMR0; // Get time stamp
 
     //ir_signal_valid = 1;
@@ -127,14 +127,14 @@ handleIRsignal(void) {
         case 3: // 562uS gap for 1 || 1.6mS for 0
         case 5:
             rangehi = TMR1mS6HI;       // Set Hi for largest possible signal
-            rangelo = TMR562uSLO;
+            rangelo = TMR1mS6LO562;
             break;
         case 4: // See what have we received as first bit in 2 bit code
         case 6:            
-            if (tstamp > TMR1mS6LO) // Signal 0. There is a small window of no man's land. However wouldn't be of much worry now.
-                ir_cmd = ((ir_cmd <<1) | 0);  // MSb first
+            if (tstamp > TMR1mS6LO) // Signal 1. There is a small window of no man's land. However wouldn't be of much worry now.
+                ir_cmd = ((ir_cmd <<1) | 1);  // MSb first
             else 
-                ir_cmd = ((ir_cmd <<1) | 1);
+                ir_cmd = ((ir_cmd <<1) | 0);
             // 562uS Pulse for next bit
             rangehi = TMR562uSHI;
             rangelo = TMR562uSLO;
@@ -146,17 +146,19 @@ handleIRsignal(void) {
             ir_cmd_valid   = true;
             ir_cur_hit.sec = jiffies; // Record Time
             ir_cur_hit.m_sec = (TMR1H - 0xB); // Adjust preset
-
+            ir_cur_code      = ir_cmd;
+            
             INTCONbits.T0IE = 0; //Stop TMR0 INT
             return;
         default:
-            pktstart :
+            pktstart:
             // Resets, Try to see header presense
             ir_state_pos = 0;
             ir_cmd       = 0;
             if (SENSOR_IR == 0) { //Yes, this could be start of pkt
                 rangehi = TMR4mSHI;
                 rangelo = TMR4mSLO;
+                INTCONbits.T0IE = 1; //Start of TMR0
             } else { // Nothing useful. Clear everything
                 rangelo = rangehi = 0;
                 INTCONbits.T0IE = 0; //Stop TMR0 INT
@@ -164,10 +166,10 @@ handleIRsignal(void) {
             }
             break;
     }
-
-    TMR0 = rangehi; //Restart with new Hi
+    
     INTCONbits.T0IF = 0;
-    INTCONbits.T0IE = 1;
+    INTCONbits.T0IE = 1; //Start of TMR0
+    TMR0 = rangehi; //Restart with new Hi
     ir_state_pos++; //UP state-machine, if a valid state was detected.    
 }
 #else 

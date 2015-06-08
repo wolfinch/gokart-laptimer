@@ -19,7 +19,7 @@ extern volatile uint8_t devId;
 extern volatile uint8_t cfgMode;
 extern volatile uint8_t ShouldSend;
 extern volatile uint8_t ir_cmd_valid;
-extern volatile uint8_t ir_cmd;
+extern volatile uint8_t ir_cur_code;
 extern volatile uint8_t hall_detect;
 extern volatile uint16_t jiffies;
 
@@ -67,11 +67,10 @@ void nrf24_send_detect_data(void ) {
     
     xprintf("%s: ENTER data_count:%d\r\n", "nrf24_send_detect_data", data_count);
     
-    nrf24_powerUpTx();    
     do {
         /* Automatically goes to TX mode */
-        xprintf("bat_level: 0x%x sec: %d mS:%d type:0x%x\r\n", data[d_cnt].battery_level, data[d_cnt].time.sec,
-                data[d_cnt].time.m_sec, data[d_cnt].detect_type);
+        xprintf("bat_level: 0x%x sec: %d mS:%d type:0x%x code: 0x%x\r\n", data[d_cnt].battery_level, data[d_cnt].time.sec,
+                data[d_cnt].time.m_sec, data[d_cnt].detect_type, data[d_cnt].detect_code);
         
         nrf24_send((uint8_t *) (&data[d_cnt]));
         while (nrf24_isSending());
@@ -103,7 +102,7 @@ void nrf24_send_detect_data(void ) {
 
         xprintf("go to Rx Mode \r\n");
 #endif
-        nrf24_fastPowerUpRx();
+        nrf24_powerUpRx();
         retry = 20;
         do {
             if (nrf24_dataReady()) {
@@ -135,6 +134,7 @@ handle_ir_cmd (void) {
     static uint8_t     is_ir_lap_valid     = true;
 
     if (ir_cmd_valid) {
+        //xprintf("va%d", ir_state_pos);
         ir_cmd_valid = false;
         if (is_ir_lap_valid || ir_last_hit.sec + 4 < ir_cur_hit.sec) {
             // This is the first hit of a new lap
@@ -160,7 +160,7 @@ handle_ir_cmd (void) {
         data[data_count].battery_level = battery_level;
         data[data_count].dev_id = devId;
         data[data_count].detect_type = IR;
-        data[data_count].detect_code = ir_cmd;
+        data[data_count].detect_code = ir_cur_code;
         data_count++; //new data to send
         return;
     }

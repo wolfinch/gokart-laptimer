@@ -63,9 +63,9 @@ void gokart_rx () {
     radio.read( &rx_data[rx_data_count], sizeof(rx_data));
 
     // Spew it
-    printf("RX Data: dev_id: %d, bat_level: 0x%x sec: %d mS:%d type:0x%x\r\n",
+    printf("RX Data: dev_id: %d, bat_level: 0x%x sec: %d mS:%d type:0x%x code:0x%x\r\n",
         rx_data[rx_data_count].dev_id, rx_data[rx_data_count].battery_level, rx_data[rx_data_count].time.sec,
-        rx_data[rx_data_count].time.m_sec, rx_data[rx_data_count].detect_type);
+        rx_data[rx_data_count].time.m_sec, rx_data[rx_data_count].detect_type, rx_data[rx_data_count].detect_code);
 
     //Now Send the response back
     gokart_add_response(&rx_data[rx_data_count]);
@@ -111,8 +111,13 @@ void gokart_send_response(void) {
         if (!ok){
             printf("failed to send response! tx_addr: %s\n", tx_addr);
             radio.print_observe_tx();
-            resp_list->retry_count++;
-            resp_list = resp_list->pnext;
+            if (resp_list->retry_count++ > 70) {
+                tmp = resp_list;
+                resp_list = resp_list->pnext;
+                resp_list_remove(tmp);
+            } else {
+                resp_list = resp_list->pnext;
+            }
         } else {
             printf ("Response success! tx_addr: %s\n", tx_addr);
             tmp = resp_list;

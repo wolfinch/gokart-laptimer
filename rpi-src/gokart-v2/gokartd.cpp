@@ -1,27 +1,50 @@
 /*
- Copyright (C) 2015 Joshith (joe.cet@gmail.com)
-
+ ******************************************************************************
+ ******************************************************************************
+ ***Gokartd - raspi conroller daemon for gokart lap-detector-iMproved (GLTDiM**
+ ***gokartd.cpp ***************************************************************
+ ***Copyright (C) 2015 Joshith (joe.cet@gmail.com)*****************************
+ ******************************************************************************
+ ******************************************************************************
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
  version 2 as published by the Free Software Foundation.
-
  */
 
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/un.h>
+#include <errno.h>
+#include <getopt.h>
+#include <sys/time.h>
+#include <signal.h>
 #include <RF24/RF24.h>
 #include "gokartd.h"
+
+static struct option long_options[] = {
+        {"help", no_argument, NULL, 'h'},
+        {"version", no_argument, NULL, 'v'},
+        {"repeat", required_argument, NULL, 'r'},
+        {"daemon", no_argument, NULL, 'd'},
+        {0, 0, 0, 0}
+};
 
 using namespace std;
 uint8_t     tx_addr[6] = {"Node1"};
 uint8_t     rx_addr[6] = {"Base0"};
+FILE        *g_log_fd  = NULL;
 
-kart_data_t rx_data[MAX_PAYLOAD_COUNT];
-uint16_t         rx_data_count = 0;
+kart_data_t         rx_data[MAX_PAYLOAD_COUNT];
+uint16_t            rx_data_count = 0;
 gim_response_list_t *resp_list_head = NULL;
-uint16_t         resp_list_cnt = 0;
+uint16_t            resp_list_cnt = 0;
 
 void resp_list_remove (gim_response_list_t *node) {
     if (node) {
@@ -150,20 +173,82 @@ nrf24_init(void) {
 
 }
 
-void
-gokart_process_data (void) {
-
-}
-
 int main ()
 {
+    int c;
+    int delay = 10;
+    char *progname = GOKARTD_VERSION;
+    char *code;
+    int  daemonize = 0;
+    char cwd[100] = "";
+    pid_t pid = 0;
 
-    printf("gokartd started!\n");
+    while ((c = getopt_long(argc, argv, "hvd", long_options, NULL))
+            != EOF) {
+        switch (c) {
+        case 'h':
+            printf("Usage: %s [socket]\n", argv[0]);
+            printf("\t -h --help \t\tdisplay usage summary\n");
+            printf("\t -v --version \t\tdisplay version\n");
+            printf("\t -d --daemon \t\t Run as a daemon\n");
+            return (EXIT_SUCCESS);
+        case 'v':
+            printf("%s\n", progname);
+            return (EXIT_SUCCESS);
+        case 'd':
+            daemonize = 1;
+            break;
+        case '?':
+            fprintf(stderr, "unrecognized option: -%c\n", optopt);
+            fprintf(stderr, "Try `%s --help' for more information.\n", progname);
+            return (EXIT_FAILURE);
+        }
+    }
+
+    printf("starting gokartd!\n");
+
+    //setup log
+#ifdef DEBUG
+    g_log_fd = fopen (LOGFILE, "w+");
+    //  if(!g_log_fd) g_log_fd = 1;
+#endif
+
+    /* set SIGCHLD to SIG_IGN, don't care about childs */
+    signal(SIGCHLD, SIG_IGN);
+
+    //Check if we are aleardy running
+    if(access(LOCKFILE, F_OK)) {
+        //We are not running, create lock file
+        sprintf(buf, "touch %s\n", LOCKFILE);
+        system (buf);
+    } else {
+        log_print ("gokartd is already running \n");
+        exit (1);
+    }
 
     nrf24_init();
     //radio.startListening();         // Power_UP|PRIM_RX|CE=1
 
     radio.printDetails();
+
+    if (daemonize) {
+        if (daemon(0, 0) == -1) {
+            fprintf(stderr, "%s: can't daemonize\n", progname);
+            exit(-1);
+        }
+    }
+
+    //Change CDW to OUTDIR
+    if(chdir(OUTDIR)) {
+        log_print("Couldn't Change CWD to %s errno: %d\n", OUTDIR, errno);
+        exit (-1);
+    }
+    log_print("CWD: %s\n", getcwd(cwd, 100));
+
+    // write pidfile
+    pid = getpid();
+    sprintf(buf, "echo %d > %s\n", (int)pid, PIDFILE);
+    system (buf);
 
     radio.startListening();
     printf ("RF24: Listening \n");

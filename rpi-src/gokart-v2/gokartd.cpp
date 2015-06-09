@@ -78,7 +78,7 @@ void gokart_add_response (kart_data_t *rx_data) ;
 void gokart_rx () {
 
     if (rx_data_count >= MAX_PAYLOAD_COUNT) {
-        printf ("ERROR: MAX payload count exceed \n");
+        log_print ("ERROR: MAX payload count exceed \n");
         return;
     }
 
@@ -86,7 +86,7 @@ void gokart_rx () {
     radio.read( &rx_data[rx_data_count], sizeof(rx_data));
 
     // Spew it
-    printf("RX Data: dev_id: %d, bat_level: 0x%x sec: %d mS:%d type:0x%x code:0x%x\r\n",
+    log_print("RX Data: dev_id: %d, bat_level: 0x%x sec: %d mS:%d type:0x%x code:0x%x\r\n",
         rx_data[rx_data_count].dev_id, rx_data[rx_data_count].battery_level, rx_data[rx_data_count].time.sec,
         rx_data[rx_data_count].time.m_sec, rx_data[rx_data_count].detect_type, rx_data[rx_data_count].detect_code);
 
@@ -101,7 +101,7 @@ gokart_add_response (kart_data_t *rx_data) {
     gim_response_list_t *resp_node = NULL;
 
     if(!(resp_node = (gim_response_list_t *)malloc (sizeof(gim_response_list_t)))) {
-        printf("Malloc fail for resp_node...\n");
+        log_print("Malloc fail for resp_node...\n");
         return;
     }
 
@@ -118,12 +118,12 @@ void gokart_send_response(void) {
     if (!resp_list)
         return;
 
-    printf ("resp_list_count: %d \n", resp_list_cnt);
+    log_print ("resp_list_count: %d \n", resp_list_cnt);
 
     do {
         radio.stopListening();
 
-        printf ("resp: dev: %d retry_cnt:%d \n", resp_list->tx_data.dev_id, resp_list->retry_count);
+        log_print ("resp: dev: %d retry_cnt:%d \n", resp_list->tx_data.dev_id, resp_list->retry_count);
 
         //Set the Tx addr for the resp
         tx_addr[4] = uint8_t(48 + (resp_list->tx_data.dev_id));
@@ -132,7 +132,7 @@ void gokart_send_response(void) {
         bool ok = radio.write( &(resp_list->tx_data), sizeof(kart_data_t));
 
         if (!ok){
-            printf("failed to send response! tx_addr: %s\n", tx_addr);
+            log_print("failed to send response! tx_addr: %s\n", tx_addr);
             radio.print_observe_tx();
             if (resp_list->retry_count++ > 70) {
                 tmp = resp_list;
@@ -142,7 +142,7 @@ void gokart_send_response(void) {
                 resp_list = resp_list->pnext;
             }
         } else {
-            printf ("Response success! tx_addr: %s\n", tx_addr);
+            log_print ("Response success! tx_addr: %s\n", tx_addr);
             tmp = resp_list;
             resp_list = resp_list->pnext;
             resp_list_remove(tmp);
@@ -173,14 +173,12 @@ nrf24_init(void) {
 
 }
 
-int main ()
+int main (int argc, char *argv[])
 {
+    char buf[128];
     int c;
-    int delay = 10;
-    char *progname = GOKARTD_VERSION;
-    char *code;
+    const char *progname = GOKARTD_VERSION;
     int  daemonize = 0;
-    char cwd[100] = "";
     pid_t pid = 0;
 
     while ((c = getopt_long(argc, argv, "hvd", long_options, NULL))
@@ -239,11 +237,12 @@ int main ()
     }
 
     //Change CDW to OUTDIR
-    if(chdir(OUTDIR)) {
-        log_print("Couldn't Change CWD to %s errno: %d\n", OUTDIR, errno);
-        exit (-1);
-    }
-    log_print("CWD: %s\n", getcwd(cwd, 100));
+    //if(chdir(OUTDIR)) {
+      //  log_print("Couldn't Change CWD to %s errno: %d\n", OUTDIR, errno);
+        //exit (-1);
+    //}
+
+    log_print("CWD: %s\n", getcwd(buf, 128));
 
     // write pidfile
     pid = getpid();
@@ -251,7 +250,7 @@ int main ()
     system (buf);
 
     radio.startListening();
-    printf ("RF24: Listening \n");
+    log_print ("RF24: Listening \n");
     while (1) {
         while (!radio.available() && !resp_list_head && !rx_data_count) {
             usleep (100);

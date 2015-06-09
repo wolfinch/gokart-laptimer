@@ -247,6 +247,7 @@ handle_hall_cmd(void) {
         return;
     }
 
+    ir_cur_code         = 0;
     hall_cur_hit.sec    = jiffies;
     hall_cur_hit.m_sec  = (TMR1H - 0xB); // Adjust preset;
     data[data_count].battery_level = battery_level;

@@ -15,6 +15,13 @@
 
 #define PACKED __attribute__ ((packed))
 
+#include <cstdlib>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <stdlib.h>
+#include <unistd.h>
+
 #define MAX_DET_CODE      4
 #define MAX_PAYLOAD_COUNT 40
 #define PACKET_SIZE      256
@@ -27,7 +34,7 @@
 #define LOCKFILE                "/etc/gokart/var/run/lock"
 #define LOGFILE                 "/etc/gokart/var/gokartd.log"
 
-#define GOKARTD_VERSION "gokartd v1.1";
+#define GOKARTD_VERSION "gokartd v1.1"
 
 #define DEBUG_NO
 #ifndef DEBUG
@@ -81,5 +88,7 @@ typedef struct karts_ {
     uint8_t             padding         :5;
     FILE                *fp;
 }karts_t;
+
+int gokart_process_data(void);
 
 #endif

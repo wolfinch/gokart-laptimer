@@ -26,7 +26,6 @@
 #define MAX_PAYLOAD_COUNT 40
 #define PACKET_SIZE      256
 #define MAX_KARTS        32
-#define LIRCD                   "/var/run/lirc/lircd"
 #define PISTILLPATH             "/usr/bin/raspistill"
 #define PISTILLARGS             "-vf -o "
 #define OUTDIR                  "/etc/gokart/data/"

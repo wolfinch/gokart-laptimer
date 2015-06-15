@@ -1,6 +1,6 @@
 <html>
 <head>
-<meta charset="utf-8">
+<title>Gokart Session</title>
 </head>
 <style type="text/css">
 .tg {
@@ -113,7 +113,7 @@
 				continue;       //Skip the image files now.
 			}
 
-			if((FALSE == strpos ($file, "DEV") )) {
+			if((FALSE == strpos ($file, "KART") )) {
 				//				echo "skipping ".$file."<br>";
 				continue;       //Skip the non interested files.
 			}
@@ -194,7 +194,7 @@
 				$lap_time = round(($end_time - $start_time), 4);
 				$total_time += $lap_time;
 				// get lap number
-				sscanf($kart_name, "DEV%d_KEY1", $kart_num);
+				sscanf($kart_name, "KART%d", $kart_num);
 				//echo $kart_name,"<br>",$kart_num,"<br>";
 
 				//	$result_array = array($kart_num, $i, round($lap_time, 4));
@@ -239,7 +239,7 @@
 			echo "<tr>";
 			echo "<td class=\"tg-5rcs\">".$kart_num."</td>";
 			echo "<td class=\"tg-5rcs\">".$position."</td>";
-			echo "<td class=\"tg-5rcs\">".$kart_drv_name['DEV'.$kart_num.'_KEY1']."</td>";
+			echo "<td class=\"tg-5rcs\">".$kart_drv_name['KART'.$kart_num]."</td>";
 			echo "<td class=\"tg-5rcs\">".(int)($lap_list[0][1]/60),":",($lap_list[0][1] - (((int)($lap_list[0][1]/60))*60))."</td>";
 			echo "<td class=\"tg-5rcs\">".$lap_list[0][2]."</td>";
 			echo "<td class=\"tg-5rcs\">".(int)($lap_list[0][0]/60),":",($lap_list[0][0] - (((int)($lap_list[0][0]/60))*60))."</td>";

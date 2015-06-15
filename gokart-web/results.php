@@ -1,6 +1,6 @@
 <html>
 <head>
-<meta charset="utf-8">
+<title>Gokart Session</title>
 <style type="text/css">
 body {
 	background-image: url("f1-bg.jpg");

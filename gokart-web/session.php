@@ -13,6 +13,10 @@ if ($Started == True) {
 }
 ?>
 <html>
+<head>
+<title>Gokart Session</title>
+</head>
+
 <style type="text/css">
 .tg {
 	border-collapse: collapse;

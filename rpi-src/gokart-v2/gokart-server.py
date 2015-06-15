@@ -67,7 +67,7 @@ def ProcessStatusQuery(self, serverAddr):
 #        print curlcmd
         if (False == os.system(curlcmd)):
             #SUCCESSfully transferred file, now delete file if jpg
-            if file.count("jpg"):
+            if file.count(".jpg"):
                 os.remove (file)
         else:
             print "File upload failed: "+file

@@ -119,9 +119,9 @@ gokart_process_data(void)
         this_kart->detect_type      = one_data->detect_type;
         this_kart->detect_code      = one_data->detect_code;
 
-        log_print ("LOG: dev_id:%d, type:%d, code: 0x%x battery_level:%d%% time:%dS:%dmS\n",
-            this_kart->kart_id, this_kart->detect_type, this_kart->detect_code, (int)this_kart->battery_level,
-            (int)tv.tv_sec, (int)tv.tv_usec);
+        log_print ("LOG: dev_id:%d, type:%s, code: 0x%x battery_level:%d%% time:%dS:%dmS\n",
+                this_kart->kart_id, (this_kart->detect_type?"HALL":"IR"), this_kart->detect_code,
+                                    (int)this_kart->battery_level, (int)tv.tv_sec, (int)tv.tv_usec);
 
         /* New whole set session or
          * individual kart session (only file for this kart was deleted) */
@@ -132,7 +132,9 @@ gokart_process_data(void)
             this_kart->num_laps         = 0;
             this_kart->lap_time         = this_kart->new_lap_time = tv;
 
-            sprintf(file_name, "KART%d_%d_%d", this_kart->kart_id, this_kart->detect_type, this_kart->detect_code);
+            sprintf(file_name, "KART%d_%s_%d", this_kart->kart_id,
+                (this_kart->detect_type?"HALL":"IR"), this_kart->detect_code);
+
             /* open a file for data */
             if ((fp = fopen (file_name, "w+")) == NULL) {       //FIXME: type detect
                 log_print ("file open with name : %s failed\n", file_name);

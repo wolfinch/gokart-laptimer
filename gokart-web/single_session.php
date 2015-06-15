@@ -1,6 +1,6 @@
 <html>
 <head>
-<meta charset="utf-8">
+<title>Gokart Session</title>
 </head>
 <style type="text/css">
 .tg {
@@ -309,7 +309,7 @@ function handleSwitch($devName, $textBoxName) {
 	$ret = TRUE;
 
 	if (($kart_drv_name['STARTED'.$devName]	== False)) {
-		$kart_drv_name[$devName.'_KEY1'] = $_POST[$textBoxName];
+		$kart_drv_name[$devName] = $_POST[$textBoxName];
 	}
 
 	if ("Server" != $_POST['serverName']) {
@@ -418,16 +418,16 @@ if (isset($_POST["newBtn"])) {
 		<tr>
 			<td class="tg-5rcs" align="center">1</td>
 			<td class="tg-5rcs"><input type="text" size=20
-				Value=<?php echo $kart_drv_name['DEV1_KEY1']; ?> name="kart1Text"
+				Value=<?php echo $kart_drv_name['KART1']; ?> name="kart1Text"
 				maxlength="15" style="background-color: #D2E4FC;"
 <?php if($kart_drv_name['STARTEDDEV1'] == True){echo "disabled />";} else {echo "/>";} ?>
 			
 			</td>
 			<td class="tg-sh0f" align="center"></td>
 			<td class="tg-sh0f" align="center"><input type="submit"
-			<?php if($kart_drv_name['STARTEDDEV1'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
+			<?php if($kart_drv_name['STARTEDKART1'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
 				name="Dev1Btn"
-				<?php if($kart_drv_name['STARTEDDEV1'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
+				<?php if($kart_drv_name['STARTEDKART1'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
 			
 			</td>
 
@@ -435,112 +435,112 @@ if (isset($_POST["newBtn"])) {
 		<tr>
 			<td class="tg-m08s" align="center">2</td>
 			<td class="tg-vn4c"><input type="text" size=20
-				Value=<?php echo $kart_drv_name['DEV2_KEY1'] ?> name="kart2Text"
+				Value=<?php echo $kart_drv_name['KART2'] ?> name="kart2Text"
 				maxlength="15" style="background-color: #D2E4FC;"
 				<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
 			
 			</td>
 			<td class="tg-vn4c" align="center"></td>
 			<td class="tg-vn4c" align="center"><input type="submit"
-			<?php if($kart_drv_name['STARTEDDEV2'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
+			<?php if($kart_drv_name['STARTEDKART2'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
 				name="Dev2Btn"
-				<?php if($kart_drv_name['STARTEDDEV2'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
+				<?php if($kart_drv_name['STARTEDKART2'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
 			
 			</td>
 		</tr>
 		<tr>
 			<td class="tg-5rcs" align="center">3</td>
 			<td class="tg-031e"><input type="text" size=20
-				Value=<?php echo $kart_drv_name['DEV3_KEY1'] ?> name="kart3Text"
+				Value=<?php echo $kart_drv_name['KART3'] ?> name="kart3Text"
 				maxlength="15" style="background-color: #D2E4FC;"
 				<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
 			
 			</td>
 			<td class="tg-031e" align="center"></td>
 			<td class="tg-031e" align="center"><input type="submit"
-			<?php if($kart_drv_name['STARTEDDEV3'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
+			<?php if($kart_drv_name['STARTEDKART3'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
 				name="Dev3Btn"
-				<?php if($kart_drv_name['STARTEDDEV3'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
+				<?php if($kart_drv_name['STARTEDKART3'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
 			
 			</td>
 		</tr>
 		<tr>
 			<td class="tg-m08s" align="center">4</td>
 			<td class="tg-vn4c"><input type="text" size=20
-				Value=<?php echo $kart_drv_name['DEV4_KEY1'] ?> name="kart4Text"
+				Value=<?php echo $kart_drv_name['KART4'] ?> name="kart4Text"
 				maxlength="15" style="background-color: #D2E4FC;"
 				<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
 			
 			</td>
 			<td class="tg-vn4c" align="center"></td>
 			<td class="tg-vn4c" align="center"><input type="submit"
-			<?php if($kart_drv_name['STARTEDDEV4'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
+			<?php if($kart_drv_name['STARTEDKART4'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
 				name="Dev4Btn"
-				<?php if($kart_drv_name['STARTEDDEV4'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
+				<?php if($kart_drv_name['STARTEDKART4'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
 			
 			</td>
 		</tr>
 		<tr>
 			<td class="tg-5rcs" align="center">5</td>
 			<td class="tg-031e"><input type="text" size=20
-				Value=<?php echo $kart_drv_name['DEV5_KEY1'] ?> name="kart5Text"
+				Value=<?php echo $kart_drv_name['KART5'] ?> name="kart5Text"
 				maxlength="15" style="background-color: #D2E4FC;"
 				<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
 			
 			</td>
 			<td class="tg-031e" align="center"></td>
 			<td class="tg-031e" align="center"><input type="submit"
-			<?php if($kart_drv_name['STARTEDDEV5'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
+			<?php if($kart_drv_name['STARTEDKART5'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
 				name="Dev5Btn"
-				<?php if($kart_drv_name['STARTEDDEV5'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
+				<?php if($kart_drv_name['STARTEDKART5'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
 			
 			</td>
 		</tr>
 		<tr>
 			<td class="tg-m08s" align="center">6</td>
 			<td class="tg-m08s"><input type="text" size=20
-				Value=<?php echo $kart_drv_name['DEV6_KEY1'] ?> name="kart6Text"
+				Value=<?php echo $kart_drv_name['KART6'] ?> name="kart6Text"
 				maxlength="15" style="background-color: #D2E4FC;"
 				<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
 			
 			</td>
 			<td class="tg-vn4c" align="center"></td>
 			<td class="tg-vn4c" align="center"><input type="submit"
-			<?php if($kart_drv_name['STARTEDDEV6'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
+			<?php if($kart_drv_name['STARTEDKART6'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
 				name="Dev6Btn"
-				<?php if($kart_drv_name['STARTEDDEV6'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
+				<?php if($kart_drv_name['STARTEDKART6'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
 			
 			</td>
 		</tr>
 		<tr>
 			<td class="tg-5rcs" align="center">7</td>
 			<td class="tg-031e"><input type="text" size=20
-				Value=<?php echo $kart_drv_name['DEV7_KEY1'] ?> name="kart7Text"
+				Value=<?php echo $kart_drv_name['KART7'] ?> name="kart7Text"
 				maxlength="15" style="background-color: #D2E4FC;"
 				<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
 			
 			</td>
 			<td class="tg-031e" align="center"></td>
 			<td class="tg-031e" align="center"><input type="submit"
-			<?php if($kart_drv_name['STARTEDDEV7'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
+			<?php if($kart_drv_name['STARTEDKART7'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
 				name="Dev7Btn"
-				<?php if($kart_drv_name['STARTEDDEV7'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
+				<?php if($kart_drv_name['STARTEDKART7'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
 			
 			</td>
 		</tr>
 		<tr>
 			<td class="tg-m08s" align="center">8</td>
 			<td class="tg-vn4c"><input type="text" size=20
-				Value=<?php echo $kart_drv_name['DEV8_KEY1'] ?> name="kart8Text"
+				Value=<?php echo $kart_drv_name['KART8'] ?> name="kart8Text"
 				maxlength="15" style="background-color: #D2E4FC;"
 				<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
 			
 			</td>
 			<td class="tg-vn4c" align="center"></td>
 			<td class="tg-vn4" align="center"><input type="submit"
-			<?php if($kart_drv_name['STARTEDDEV8'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
+			<?php if($kart_drv_name['STARTEDKART8'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
 				name="Dev8Btn"
-				<?php if($kart_drv_name['STARTEDDEV8'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
+				<?php if($kart_drv_name['STARTEDKART8'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
 			
 			</td>
 		</tr>

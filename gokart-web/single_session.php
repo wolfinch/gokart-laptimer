@@ -201,6 +201,7 @@ input[type="text"]:disabled {
 </style>
 
 <?php
+define (MAX_KART_NUM, 8);
 global $Started;
 global $kart_drv_name;
 $defaultName = "Name";
@@ -272,20 +273,20 @@ function sendHttpRequest_internal($cmd) {
 }
 
 function sendHttpRequest($cmd) {
-	return sendHttprequest_internal($cmd);
-	//return True;
+	//return sendHttprequest_internal($cmd);
+	return True;
 }
 
 // Cleanup session data
 function cleanupSession ($devName) {
 	// Get the configured names
 	global $UPLOAD_DIR;
-	
+
 	//if the dir doesn't exist, return
 	if(False === is_dir($UPLOAD_DIR)) {
 		return;
 	}
-	
+
 	$dir = new DirectoryIterator($UPLOAD_DIR);
 	foreach ($dir as $fileinfo) {
 		if ($fileinfo->isDot()) {
@@ -325,61 +326,35 @@ function handleSwitch($devName, $textBoxName) {
 	//echo("StartBtn: " . $kart_drv_name['DEV1'] . "<br/>\n\n");
 
 	if($kart_drv_name['STARTED'.$devName] == True) {
+		// Send stop command
+		if (FALSE == sendHttpRequest("STOP:".$devName.":") ) {
+			echo "Failed to send STOP request for KART<br>";
+			$ret = FALSE;
+		}
 		($kart_drv_name['STARTED'.$devName]	= False);
 		//cleanup the session for the device
 		cleanupSession ($devName);
-		// Send stop command
-		if (FALSE == sendHttpRequest("STOP:".$devName.":") ) {
-			echo "Failed to send STOP request for DEV1<br>";
-			$ret = FALSE;
-		}
 	} else {
-		($kart_drv_name['STARTED'.$devName] = True);
 		// Send Start command
 		if (FALSE == sendHttpRequest("START:".$devName.":") ) {
-			echo "Failed to send START request for DEV1 <br>";
+			echo "Failed to send START request for KART <br>";
 			$ret = FALSE;
 		}
+		($kart_drv_name['STARTED'.$devName] = True);
+
 	}
 
 	// store the config
-	file_put_contents('config.php', '<?php return ' . var_export($kart_drv_name, true) . ';');
+	file_put_contents('config.php', '<?php return ' . var_export($kart_drv_name, true) . '; ?>');
 	return $ret;
 }
 
 //$Started = False;
-if ( isset($_POST["Dev1Btn"])){
-	handleSwitch ('DEV1', 'kart1Text');
+for ($i = 1; $i <= MAX_KART_NUM; $i++) {
+	if ( isset($_POST["Dev".$i."Btn"])){
+		handleSwitch ('KART'.$i, 'kart'.$i.'Text');
+	}
 }
-
-if ( isset($_POST["Dev2Btn"])){
-	handleSwitch ('DEV2', 'kart2Text');
-}
-
-if ( isset($_POST["Dev3Btn"])){
-	handleSwitch ('DEV3', 'kart3Text');
-}
-
-if ( isset($_POST["Dev4Btn"])){
-	handleSwitch ('DEV4', 'kart4Text');
-}
-
-if ( isset($_POST["Dev5Btn"])){
-	handleSwitch ('DEV5', 'kart5Text');
-}
-
-if ( isset($_POST["Dev6Btn"])){
-	handleSwitch ('DEV6', 'kart6Text');
-}
-
-if ( isset($_POST["Dev7Btn"])){
-	handleSwitch ('DEV7', 'kart7Text');
-}
-
-if ( isset($_POST["Dev8Btn"])){
-	handleSwitch ('DEV8', 'kart8Text');
-}
-
 
 if (isset($_POST["newBtn"])) {
 	//echo ("new session: <br/>\n\n");
@@ -400,7 +375,7 @@ if (isset($_POST["newBtn"])) {
 		$kart_drv_name[$key] = $defaultName;
 	}
 	// store the config
-	file_put_contents('config.php', '<?php return ' . var_export($kart_drv_name, true) . ';');
+	file_put_contents('config.php', '<?php return ' . var_export($kart_drv_name, true) . '; ?>');
 }
 ?>
 
@@ -415,135 +390,24 @@ if (isset($_POST["newBtn"])) {
 			<td class="tg-if22" align="center">Lap <br> #</td>
 			<td class="tg-if22"></td>
 		</tr>
-		<tr>
-			<td class="tg-5rcs" align="center">1</td>
-			<td class="tg-5rcs"><input type="text" size=20
-				Value=<?php echo $kart_drv_name['KART1']; ?> name="kart1Text"
-				maxlength="15" style="background-color: #D2E4FC;"
-<?php if($kart_drv_name['STARTEDDEV1'] == True){echo "disabled />";} else {echo "/>";} ?>
-			
-			</td>
-			<td class="tg-sh0f" align="center"></td>
-			<td class="tg-sh0f" align="center"><input type="submit"
-			<?php if($kart_drv_name['STARTEDKART1'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
-				name="Dev1Btn"
-				<?php if($kart_drv_name['STARTEDKART1'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
-			
-			</td>
-
-		</tr>
-		<tr>
-			<td class="tg-m08s" align="center">2</td>
-			<td class="tg-vn4c"><input type="text" size=20
-				Value=<?php echo $kart_drv_name['KART2'] ?> name="kart2Text"
-				maxlength="15" style="background-color: #D2E4FC;"
-				<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
-			
-			</td>
-			<td class="tg-vn4c" align="center"></td>
-			<td class="tg-vn4c" align="center"><input type="submit"
-			<?php if($kart_drv_name['STARTEDKART2'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
-				name="Dev2Btn"
-				<?php if($kart_drv_name['STARTEDKART2'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
-			
-			</td>
-		</tr>
-		<tr>
-			<td class="tg-5rcs" align="center">3</td>
-			<td class="tg-031e"><input type="text" size=20
-				Value=<?php echo $kart_drv_name['KART3'] ?> name="kart3Text"
-				maxlength="15" style="background-color: #D2E4FC;"
-				<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
-			
-			</td>
-			<td class="tg-031e" align="center"></td>
-			<td class="tg-031e" align="center"><input type="submit"
-			<?php if($kart_drv_name['STARTEDKART3'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
-				name="Dev3Btn"
-				<?php if($kart_drv_name['STARTEDKART3'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
-			
-			</td>
-		</tr>
-		<tr>
-			<td class="tg-m08s" align="center">4</td>
-			<td class="tg-vn4c"><input type="text" size=20
-				Value=<?php echo $kart_drv_name['KART4'] ?> name="kart4Text"
-				maxlength="15" style="background-color: #D2E4FC;"
-				<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
-			
-			</td>
-			<td class="tg-vn4c" align="center"></td>
-			<td class="tg-vn4c" align="center"><input type="submit"
-			<?php if($kart_drv_name['STARTEDKART4'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
-				name="Dev4Btn"
-				<?php if($kart_drv_name['STARTEDKART4'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
-			
-			</td>
-		</tr>
-		<tr>
-			<td class="tg-5rcs" align="center">5</td>
-			<td class="tg-031e"><input type="text" size=20
-				Value=<?php echo $kart_drv_name['KART5'] ?> name="kart5Text"
-				maxlength="15" style="background-color: #D2E4FC;"
-				<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
-			
-			</td>
-			<td class="tg-031e" align="center"></td>
-			<td class="tg-031e" align="center"><input type="submit"
-			<?php if($kart_drv_name['STARTEDKART5'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
-				name="Dev5Btn"
-				<?php if($kart_drv_name['STARTEDKART5'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
-			
-			</td>
-		</tr>
-		<tr>
-			<td class="tg-m08s" align="center">6</td>
-			<td class="tg-m08s"><input type="text" size=20
-				Value=<?php echo $kart_drv_name['KART6'] ?> name="kart6Text"
-				maxlength="15" style="background-color: #D2E4FC;"
-				<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
-			
-			</td>
-			<td class="tg-vn4c" align="center"></td>
-			<td class="tg-vn4c" align="center"><input type="submit"
-			<?php if($kart_drv_name['STARTEDKART6'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
-				name="Dev6Btn"
-				<?php if($kart_drv_name['STARTEDKART6'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
-			
-			</td>
-		</tr>
-		<tr>
-			<td class="tg-5rcs" align="center">7</td>
-			<td class="tg-031e"><input type="text" size=20
-				Value=<?php echo $kart_drv_name['KART7'] ?> name="kart7Text"
-				maxlength="15" style="background-color: #D2E4FC;"
-				<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
-			
-			</td>
-			<td class="tg-031e" align="center"></td>
-			<td class="tg-031e" align="center"><input type="submit"
-			<?php if($kart_drv_name['STARTEDKART7'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
-				name="Dev7Btn"
-				<?php if($kart_drv_name['STARTEDKART7'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
-			
-			</td>
-		</tr>
-		<tr>
-			<td class="tg-m08s" align="center">8</td>
-			<td class="tg-vn4c"><input type="text" size=20
-				Value=<?php echo $kart_drv_name['KART8'] ?> name="kart8Text"
-				maxlength="15" style="background-color: #D2E4FC;"
-				<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
-			
-			</td>
-			<td class="tg-vn4c" align="center"></td>
-			<td class="tg-vn4" align="center"><input type="submit"
-			<?php if($kart_drv_name['STARTEDKART8'] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";} ?>
-				name="Dev8Btn"
-				<?php if($kart_drv_name['STARTEDKART8'] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";} ?>
-			
-			</td>
-		</tr>
+		<?php
+		for ($i = 1; $i <= MAX_KART_NUM; $i++) {
+			echo "<tr>";
+			echo "<td class=\"tg-5rcs\" align=\"center\">".$i."</td>";
+			echo "<td class=\"tg-5rcs\"><input type=\"text\" size=\"20\"";
+			echo "Value=\"".$kart_drv_name['KART'.$i]."\" name=\"kart".$i."Text\"";
+			echo "maxlength=\"15\" style=\"background-color: #D2E4FC;\"";
+			if($kart_drv_name['STARTEDKART'.$i] == True){echo "disabled />";} else {echo "/>";};
+			echo "</td>";
+			echo "<td class=\"tg-sh0f\" align=\"center\"></td>";
+			echo "<td class=\"tg-sh0f\" align=\"center\"><input type=\"submit\"";
+			if($kart_drv_name['STARTEDKART'.$i] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";}
+			echo "name=\"Dev".$i."Btn\"";
+			if($kart_drv_name['STARTEDKART'.$i] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";}
+			echo "</td>";
+			echo "</tr>";
+		}
+		?>
 	</table>
 	<br>
 	<table class="tg">
@@ -559,19 +423,19 @@ if (isset($_POST["newBtn"])) {
 			<td class="tg-5rcs"><input type="text" size=20
 				Value=<?php if (empty($kart_drv_name['SRV_NAME'])) {echo "Server";} else {echo $kart_drv_name['SRV_NAME'];} ?>
 				name="serverName" maxlength="15" style="background-color: #D2E4FC;"
-				<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
+		<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
 			
 			</td>
 			<td class="tg-5rcs"><input type="text" size=20
 				Value=<?php if (empty($kart_drv_name['SRV_IP'])) {echo "Ip";} else {echo $kart_drv_name['SRV_IP'];} ?>
 				name="serverIp" maxlength="15" style="background-color: #D2E4FC;"
-				<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
+		<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
 			
 			</td>
 			<td class="tg-5rcs"><input type="text" size=20
 				Value=<?php if (empty($kart_drv_name['SRV_PORT'])) {echo "Port";} else {echo $kart_drv_name['SRV_PORT'];} ?>
 				name="serverPort" maxlength="15" style="background-color: #D2E4FC;"
-				<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
+		<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
 			
 			</td>
 		</tr>
@@ -596,5 +460,7 @@ var auto_refresh = setInterval(
 	<div id="status_query" align="center"></div>
 </body>
 
-
+<footer align='Center'> 
+© Copyright 2015 Joshith R K, all rights reserved 
+</footer>
 </html>

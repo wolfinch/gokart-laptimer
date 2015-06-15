@@ -27,5 +27,7 @@ var auto_refresh = setInterval(
 <body>
 	<div id="score_card" align="center"></div>
 </body>
-
+<footer align='Center' > 
+© Copyright 2015 Joshith R K, all rights reserved 
+</footer>
 </html>

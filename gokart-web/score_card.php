@@ -98,7 +98,7 @@
 		$result_array[][] = array();
 		//if the dir doesn't exist, return
 		if(False === is_dir($UPLOAD_DIR)) {
-			//	mkdir($UPLOAD_DIR, 0777);			
+			//	mkdir($UPLOAD_DIR, 0777);
 			return;
 		}
 
@@ -118,44 +118,6 @@
 				continue;       //Skip the non interested files.
 			}
 
-			#if 0
-			$file_hndl = fopen($file, "r") or die("Unable to open file!");
-			$lap_num = 0;
-			$lap_time = 0;
-			$total_time = 0;
-			// Output one line until end-of-file
-			while(!feof($file_hndl)) {
-				$file_line = fgets($file_hndl);
-				//				echo $file_line."<br>";
-				/* get the formatted contents from the file */
-				// sscanf ($file_line, "KART:%s:START_TIME:%f:END_TIME:%f",$kart_name, $start_time, $end_time);
-				if ( FALSE == strtok ($file_line, ":")) {
-					//					echo "invalid first token <br>";
-					continue;
-				}
-
-				//echo "FIRST kart_name: ".$kart_name."start_time:".$start_time."end_time:".$end_time."<br>";
-				//sample: KART:DEV2_KEY1:START_TIME:1428594608.534828:END_TIME:1428594767.840776:
-
-				$kart_name = strtok  (":"); // name
-				strtok  (":");
-				$start_time = strtok (":");
-				strtok (":");
-				$end_time = strtok (":");
-
-
-				//				echo "SEC kart_name: ".$kart_name."start_time:".$start_time."end_time:".$end_time."<br>";
-
-				if ($lap_num) {
-					$lap_time = $end_time - $start_time;
-					$total_time += $lap_time;
-				}
-				// get lap number
-				$lap_num++;
-
-			}
-			fclose($file_hndl);
-			#endif
 			// read the entire file
 			$file_array = file ($file);
 			if(count($file_array) <= 1) {
@@ -166,35 +128,40 @@
 			$lap_num = 0;
 			$total_time = 0;
 			$raw_count = 0;
-
+				
+			//echo "FIRST kart_name: ".$kart_name."start_time:".$start_time."end_time:".$end_time."<br>";
+			//sample: KART:1:START_TIME:105.836:END_TIME:120.338:BAT:95:DET_TYPE:0:DET_CODE:1:
 			for ($i = count($file_array)-1; $i >=1; $i--) {
 				$file_line = $file_array  [$i];
 				/* get the formatted contents from the file */
-				// sscanf ($file_line, "KART:%s:START_TIME:%f:END_TIME:%f",$kart_name, $start_time, $end_time);
 				if ( FALSE == strtok ($file_line, ":")) {
 					//					echo "invalid first token <br>";
 					continue;
 				}
 
-				//echo "FIRST kart_name: ".$kart_name."start_time:".$start_time."end_time:".$end_time."<br>";
 				//sample: KART:DEV2_KEY1:START_TIME:1428594608.534828:END_TIME:1428594767.840776:
 
-				$kart_name = strtok  (":"); // name
+				$kart_num = strtok  (":"); // name
 				strtok  (":");
 				$start_time = strtok (":");
 				strtok (":");
 				$end_time = strtok (":");
-					
+				strtok (":");
+				$bat_level = strtok (":");
+				strtok (":");
+				$det_type = strtok (":");
+				strtok (":");
+				$det_code	= strtok (":");
+
 				if ($end_time == 0 || $start_time == 0 ) {
 					continue;
 				}
-				//echo "<br> kart_name: ".$kart_name."start_time:".$start_time."end_time:".$end_time."<br>";
-
+				echo "<br> kart_name: ".$kart_name."start_time:".$start_time."end_time:".$end_time."bat_level:".$bat_level."det_type:".$det_type."det_code:".$det_code."<br>";
 
 				$lap_time = round(($end_time - $start_time), 4);
 				$total_time += $lap_time;
 				// get lap number
-				sscanf($kart_name, "KART%d", $kart_num);
+				//sscanf($kart_name, "KART%d", );
 				//echo $kart_name,"<br>",$kart_num,"<br>";
 
 				//	$result_array = array($kart_num, $i, round($lap_time, 4));
@@ -209,7 +176,6 @@
 				$result_array[$kart_num][0] = array($total_time, $best_time, $lap_num);
 				//echo $result_array[$kart_num][0][1],"besttime<br>";
 			}
-
 		}
 		//var_dump ($result_array);
 		//echo "<br>";
@@ -232,7 +198,7 @@
 			if($kart_num == 0) {
 				continue;
 			}
-				
+
 			$position++;
 			//echo "sorted array row key<br>";
 			//Create table entry for the kart and statistics

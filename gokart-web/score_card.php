@@ -58,7 +58,6 @@
 	text-align: center
 }
 
-#
 .tg .tg-99w3 {
 	background-color: #D2E4FC;
 	font-weight: bold;
@@ -70,6 +69,24 @@
 	font-size: 20px;
 	color: #039;
 	text-align: center
+}
+
+.tg .tg-6rcs {
+	font-weight: bold;
+	font-size: 20px;
+	color: #E89619;
+	text-align: center
+}
+
+.tg .tg-if20b {
+	background-color: #D2E4FC;
+	font-weight: bold;
+	font-size: 14px;
+	align: center
+	text-align: center
+	padding: 0px 0px;
+	border-style: solid;
+	border-width: 0px;
 }
 </style>
 <body>
@@ -87,6 +104,86 @@
 			<td class="tg-if22"></td>
 		</tr>
 		<?php
+		class kartInfo {
+			private $kartId = 0;
+			private $hallBestLapTime = 0;
+			private $hallBestLapNum = 0;
+
+			private $irBestLapTime	= 0;
+			private $irBestLapNum = 0;
+
+			private $hallLapCount = 0;
+			private $irLapCount	= 0;
+
+			private $hallTotalLapTime = 0;
+			private $irTotalLapTime	= 0;
+
+			private $hallLapTime = array();
+			private $irLapTime	 = array();
+
+			public function __construct($Id) {
+				$this->kartId = $Id;
+			}
+			/* TODO: FIXME: Caveat - No support for multiple IR sections */
+			public function irLapAdd ($lapTime, $count) {
+				$this->irLapTime[$count] = $lapTime;
+				$this->irLapCount++;
+				$this->irTotalLapTime += $lapTime;
+				if ($this->irBestLapTime === 0) {
+					$this->irBestLapTime = $lapTime;
+					$this->irBestLapNum	 = $count;
+				} elseif ($lapTime < $this->irBestLapTime) {
+					$this->irBestLapTime = $lapTime;
+					$this->irBestLapNum	 = $count;
+				}
+				//echo "<br>ir lap add: list:".var_dump($this->irLapTime);
+			}
+			public function hallLapAdd ($lapTime, $count) {
+				$this->hallLapTime[$count] = $lapTime;
+				$this->hallLapCount++;
+				$this->hallTotalLapTime += $lapTime;
+				if ($this->hallBestLapTime === 0) {
+					$this->hallBestLapTime = $lapTime;
+					$this->hallBestLapNum	 = $count;
+				}elseif ($lapTime < $this->hallBestLapTime) {
+					$this->hallBestLapTime = $lapTime;
+					$this->hallBestLapNum	= $count;
+				}
+			}
+			public function irLapCountGet () {
+				return $this->irLapCount;
+			}
+			public function hallLapCountGet () {
+				return $this->hallLapCount;
+			}
+			public function irTotalLapTimeGet () {
+				return $this->irTotalLapTime;
+			}
+			public function hallTotalLapTimeGet () {
+				return $this->hallTotalLapTime;
+			}
+			public function irLapListGet () {
+				return $this->irLapTime;
+			}
+			public function hallLapListGet () {
+				return $this->hallLapTime;
+			}
+			public function irBestLapTimeGet () {
+				return $this->irBestLapTime;
+			}
+			public function hallBestLapTimeGet () {
+				return $this->hallBestLapTime;
+			}
+			public function irBestLapNumGet () {
+				return $this->irBestLapNum;
+			}
+			public function hallBestLapNumGet () {
+				return $this->hallBestLapNum;
+			}
+		};
+
+		$result_array = array();
+
 		$UPLOAD_DIR = "uploads/";
 		//$config = include 'config.php';
 		// Get the configured names
@@ -95,7 +192,6 @@
 		echo "<br> <br> <br>";
 		echo "<br> <br><br>";
 
-		$result_array[][] = array();
 		//if the dir doesn't exist, return
 		if(False === is_dir($UPLOAD_DIR)) {
 			//	mkdir($UPLOAD_DIR, 0777);
@@ -125,10 +221,6 @@
 				continue;
 			}
 			// read the array backward
-			$lap_num = 0;
-			$total_time = 0;
-			$raw_count = 0;
-				
 			//echo "FIRST kart_name: ".$kart_name."start_time:".$start_time."end_time:".$end_time."<br>";
 			//sample: KART:1:START_TIME:105.836:END_TIME:120.338:BAT:95:DET_TYPE:0:DET_CODE:1:
 			for ($i = count($file_array)-1; $i >=1; $i--) {
@@ -141,40 +233,42 @@
 
 				//sample: KART:DEV2_KEY1:START_TIME:1428594608.534828:END_TIME:1428594767.840776:
 
-				$kart_num = strtok  (":"); // name
+				$kart_num = (int)strtok  (":"); // name
 				strtok  (":");
-				$start_time = strtok (":");
+				$start_time = (float)strtok (":");
 				strtok (":");
-				$end_time = strtok (":");
+				$end_time = (float)strtok (":");
 				strtok (":");
-				$bat_level = strtok (":");
+				$bat_level = (int)strtok (":");
 				strtok (":");
-				$det_type = strtok (":");
+				$det_type = (int)strtok (":");
 				strtok (":");
-				$det_code	= strtok (":");
+				$det_code	= (int)strtok (":");
 
 				if ($end_time == 0 || $start_time == 0 ) {
 					continue;
 				}
-				echo "<br> kart_name: ".$kart_name."start_time:".$start_time."end_time:".$end_time."bat_level:".$bat_level."det_type:".$det_type."det_code:".$det_code."<br>";
 
 				$lap_time = round(($end_time - $start_time), 4);
-				$total_time += $lap_time;
+				//echo "<br> kart_name: ".$kart_name."start_time:".$start_time.
+					//" end_time:".$end_time." bat_level:".$bat_level." det_type:".
+					//$det_type." det_code:".$det_code." lap_time: ".$lap_time."<br>";
+
 				// get lap number
 				//sscanf($kart_name, "KART%d", );
 				//echo $kart_name,"<br>",$kart_num,"<br>";
 
-				//	$result_array = array($kart_num, $i, round($lap_time, 4));
-				$result_array[$kart_num][$i] = $lap_time;
-				$best_time = $result_array[$kart_num][0][1];
-				$lap_num = $result_array[$kart_num][0][2];
-				//Keep total time in 0th element
-				if (($best_time == 0)|| ($lap_time < $best_time)){
-					$best_time = $lap_time;
-					$lap_num	= $i;
+				if ($result_array[$kart_num] == null) {
+					//echo "<br> new kartinfo:".$kart_num."<br";
+					$result_array[$kart_num] = new kartInfo($kart_num);
 				}
-				$result_array[$kart_num][0] = array($total_time, $best_time, $lap_num);
-				//echo $result_array[$kart_num][0][1],"besttime<br>";
+
+				if ($det_type == 0) { // IR
+					/* TODO: Add support for multiple IR sections */
+					$result_array[$kart_num]->irLapAdd($lap_time, $i);
+				} else {
+					$result_array[$kart_num]->hallLapAdd($lap_time, $i);
+				}
 			}
 		}
 		//var_dump ($result_array);
@@ -184,20 +278,60 @@
 		//echo "count kart1: ",count($result_array[1]),"<br>";
 
 		function count_sort($arr1, $arr2) {
-			if ((count($arr2) == count($arr1))) {
-				return $arr1[0][0] - $arr2[0][0];
+			//echo "<br>sorting array1<br>";
+			//var_dump ($arr1);
+			//echo "<br>sorting array2<br>";
+			//var_dump ($arr2);
+			$arr1lapCount = ($arr1->irLapCountGet() > $arr1->hallLapCountGet()?
+								$arr1->irLapCountGet():$arr1->hallLapCountGet());
+			$arr1totalTime = ($arr1->irTotalLapTimeGet() > $arr1->irTotalLapTimeGet() ?
+								$arr1->irTotalLapTimeGet(): $arr1->irTotalLapTimeGet());
+										
+			$arr2lapCount = ($arr2->irLapCountGet() > $arr2->hallLapCountGet()?
+								$arr2->irLapCountGet():$arr2->hallLapCountGet());	
+			$arr2totalTime = ($arr2->irTotalLapTimeGet() > $arr2->irTotalLapTimeGet() ?
+								$arr2->irTotalLapTimeGet(): $arr2->irTotalLapTimeGet());												
+			if ($arr1lapCount == $arr1lapCount) {
+				//if lap counts are same, compare the total time (hall time will be more precise)
+				return ($arr1totalTime - $arr2totalTime);
 			} else {
-				return (count($arr2) - count($arr1));
+				//if lap counts are different, the more the lap is the best
+				return ($arr1lapCount - $arr2lapCount);
 			}
 		}
+
 		uasort($result_array, 'count_sort');
-		//echo "sorted array<br>";
+		//echo "<br>sorted array<br>";
 		//var_dump ($result_array);
 		$position = 0;
-		foreach ($result_array as $kart_num => $lap_list) {
+		foreach ($result_array as $kart_num => $kart_info) {
 			if($kart_num == 0) {
 				continue;
 			}
+
+			$ir_lap_list   = $kart_info->irLapListGet();
+			$hall_lap_list = $kart_info->hallLapListGet();
+				
+			if ( $kart_info->irLapCountGet() >= $kart_info->hallLapCountGet()) {
+				$best_lap_time = (int)(($kart_info->irBestlapTimeGet()/60)).":".
+						($kart_info->irBestLapTimeGet() -
+						(((int)($kart_info->irBestLapTimeGet()/60))*60));
+				$best_lap_num = $kart_info->irBestLapNumGet();
+				$total_lap_time = (int)($kart_info->irTotalLapTimeGet()/60).":".
+						($kart_info->irTotalLapTimeGet() -
+						(((int)($kart_info->irTotalLapTimeGet()/60))*60));
+				$ir = true;		
+			}else {
+				$best_lap_time = (int)(($kart_info->hallBestlapTimeGet()/60)).":".
+						($kart_info->hallBestLapTimeGet() -
+						(((int)($kart_info->hallBestLapTimeGet()/60))*60));
+				$best_lap_num = $kart_info->hallBestLapNumGet();
+				$total_lap_time = (int)($kart_info->hallTotalLapTimeGet()/60).":".
+						($kart_info->hallTotalLapTimeGet() -
+						(((int)($kart_info->hallTotalLapTimeGet()/60))*60));
+				$ir = false;								
+			}
+			//echo "<br>laplist count:".count($ir_lap_list)." <br>";
 
 			$position++;
 			//echo "sorted array row key<br>";
@@ -206,18 +340,33 @@
 			echo "<td class=\"tg-5rcs\">".$kart_num."</td>";
 			echo "<td class=\"tg-5rcs\">".$position."</td>";
 			echo "<td class=\"tg-5rcs\">".$kart_drv_name['KART'.$kart_num]."</td>";
-			echo "<td class=\"tg-5rcs\">".(int)($lap_list[0][1]/60),":",($lap_list[0][1] - (((int)($lap_list[0][1]/60))*60))."</td>";
-			echo "<td class=\"tg-5rcs\">".$lap_list[0][2]."</td>";
-			echo "<td class=\"tg-5rcs\">".(int)($lap_list[0][0]/60),":",($lap_list[0][0] - (((int)($lap_list[0][0]/60))*60))."</td>";
+			echo "<td class=\"tg-".(($ir === true)?"5":"6")."rcs\">".$best_lap_time." (Best)</td>";
+			echo "<td class=\"tg-".(($ir === true)?"5":"6")."rcs\">".$best_lap_num ."</td>";
+			echo "<td class=\"tg-".(($ir === true)?"5":"6")."rcs\">".$total_lap_time."</td>";
 			echo "<td class=\"tg-5rcs\"></td>";
 			echo "</tr>";
 			//Print last 4 laps
-			for ($i=count($lap_list)-1, $j=0; ($i >=1) && ($j < 3); $i--, $j++) {
+			for ($i=(($ir === true)?$kart_info->irLapCountGet():$kart_info->hallLapCountGet()), 
+									$j=0; ($i >0) && ($j < 4); $i--, $j++) {
 				echo "<tr>";
 				echo "<td class=\"tg-if20\"></td>";
 				echo "<td class=\"tg-if20\"></td>";
 				echo "<td class=\"tg-if20\"></td>";
-				echo "<td class=\"tg-if20\">".(int)($lap_list[$i]/60),":",($lap_list[$i] - (((int)($lap_list[$i]/60))*60))."</td>";
+				if ($ir == true) {
+					echo "<td class=\"tg-if20\">".(int)($ir_lap_list[$i]/60),":",
+							($ir_lap_list[$i] - (((int)($ir_lap_list[$i]/60))*60));
+					if ($hall_lap_list[$i] != 0) {									
+						echo "  (<font color=\"#E89619\" size=\"2\">".(int)($hall_lap_list[$i]/60),":",
+								($hall_lap_list[$i] - (((int)($hall_lap_list[$i]/60))*60))."</font>)</td>";
+					}
+				} else {
+					echo "<td class=\"tg-if20\"><font color=\"#E89619\">".(int)($hall_lap_list[$i]/60),":",
+							($hall_lap_list[$i] - (((int)($hall_lap_list[$i]/60))*60))."</font>";
+					if ($ir_lap_list[$i] != 0) {		
+						echo "  (<font size=\"2\">".(int)($ir_lap_list[$i]/60),":",
+								($ir_lap_list[$i] - (((int)($ir_lap_list[$i]/60))*60))."</font>)</td>";
+					}
+				}
 				echo "<td class=\"tg-if20\">".$i."</td>";
 				echo "<td class=\"tg-if20\"></td>";
 				echo "<td class=\"tg-if20\"></td>";

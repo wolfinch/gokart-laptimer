@@ -202,15 +202,12 @@ input[type="text"]:disabled {
 
 <?php
 define (MAX_KART_NUM, 8);
+define (DEFAULT_NAME, "Name");
 global $Started;
 global $kart_drv_name;
-$defaultName = "Name";
 $UPLOAD_DIR = "uploads/";
 
 $kart_drv_name = include($_SERVER['DOCUMENT_ROOT']."/config.php");
-
-//$kart_drv_name = array ($defaultName, $defaultName, $defaultName, $defaultName,
-//						$defaultName, $defaultName, $defaultName, $defaultName);
 
 function sendHttpRequest_internal($cmd) {
 	global $kart_drv_name;
@@ -279,6 +276,23 @@ function sendHttpRequest($cmd) {
 
 // Cleanup session data
 function cleanupSession ($devName) {
+	global $kart_drv_name;
+	
+	if ($devName == "all") {
+		// Clear the session data store
+		for ($i=1; $i <= MAX_KART_NUM; $i++) {
+			$kart_drv_name["KART".$i] = DEFAULT_NAME;
+			$kart_drv_name["STARTEDKART".$i] = false;
+			$kart_drv_name["BATLEVEL_KART".$i] = 0;
+			$kart_drv_name["LAPCOUNT_KART".$i] = 0;			
+		}
+	} else {
+			//$kart_drv_name[$devName] = DEFAULT_NAME;
+			$kart_drv_name["STARTED".$devName] = false;
+			$kart_drv_name["BATLEVEL_".$devName] = 0;
+			$kart_drv_name["LAPCOUNT_".$devName] = 0;	
+	}
+	
 	// Get the configured names
 	global $UPLOAD_DIR;
 
@@ -309,10 +323,6 @@ function handleSwitch($devName, $textBoxName) {
 	global $kart_drv_name;
 	$ret = TRUE;
 
-	if (($kart_drv_name['STARTED'.$devName]	== False)) {
-		$kart_drv_name[$devName] = $_POST[$textBoxName];
-	}
-
 	if ("Server" != $_POST['serverName']) {
 		$kart_drv_name['SRV_NAME'] = $_POST['serverName'];
 	}
@@ -332,16 +342,16 @@ function handleSwitch($devName, $textBoxName) {
 			$ret = FALSE;
 		}
 		($kart_drv_name['STARTED'.$devName]	= False);
-		//cleanup the session for the device
-		cleanupSession ($devName);
 	} else {
+		$kart_drv_name[$devName] = $_POST[$textBoxName];
+		//cleanup the previous session for the device
+		cleanupSession ($devName);
 		// Send Start command
 		if (FALSE == sendHttpRequest("START:".$devName.":") ) {
 			echo "Failed to send START request for KART <br>";
 			$ret = FALSE;
 		}
 		($kart_drv_name['STARTED'.$devName] = True);
-
 	}
 
 	// store the config
@@ -360,20 +370,6 @@ if (isset($_POST["newBtn"])) {
 	//echo ("new session: <br/>\n\n");
 	// cleanup the session data
 	cleanupSession ("all");
-	// Clear the driver names
-	foreach ($kart_drv_name as $key => $val ) {
-
-		if(FALSE !== strpos($key, 'STARTED')) {
-			$kart_drv_name[$key] = false;
-			continue;
-		}
-		if ($key == 'SRV_NAME' || $key == 'SRV_IP' ||
-		$key == 'SRV_PORT') {
-			continue;
-		}
-
-		$kart_drv_name[$key] = $defaultName;
-	}
 	// store the config
 	file_put_contents('config.php', '<?php return ' . var_export($kart_drv_name, true) . '; ?>');
 }
@@ -382,13 +378,14 @@ if (isset($_POST["newBtn"])) {
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
 	<table class="tg">
 		<tr>
-			<th class="tg-2fkl" colspan="4">Session Entry</th>
+			<th class="tg-2fkl" colspan="5">Session Entry</th>
 		</tr>
 		<tr>
 			<td class="tg-if22">Kart No</td>
 			<td class="tg-if22">Driver Name</td>
-			<td class="tg-if22" align="center">Lap <br> #</td>
 			<td class="tg-if22"></td>
+			<td class="tg-if22" align="center">Lap <br> Count</td>			
+			<td class="tg-if22" align="center">Battery <br> Level</td>			
 		</tr>
 		<?php
 		for ($i = 1; $i <= MAX_KART_NUM; $i++) {
@@ -399,12 +396,13 @@ if (isset($_POST["newBtn"])) {
 			echo "maxlength=\"15\" style=\"background-color: #D2E4FC;\"";
 			if($kart_drv_name['STARTEDKART'.$i] == True){echo "disabled />";} else {echo "/>";};
 			echo "</td>";
-			echo "<td class=\"tg-sh0f\" align=\"center\"></td>";
 			echo "<td class=\"tg-sh0f\" align=\"center\"><input type=\"submit\"";
 			if($kart_drv_name['STARTEDKART'.$i] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";}
 			echo "name=\"Dev".$i."Btn\"";
 			if($kart_drv_name['STARTEDKART'.$i] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";}
 			echo "</td>";
+			echo "<td class=\"tg-sh0f\" align=\"center\"><div id=\"lap_count".$i."\" align=\"center\"></div></td>";	
+			echo "<td class=\"tg-sh0f\" align=\"center\"><div id=\"battery_level".$i."\" align=\"center\"></div></td>";						
 			echo "</tr>";
 		}
 		?>
@@ -442,25 +440,48 @@ if (isset($_POST["newBtn"])) {
 	</table>
 	<br> <input type="submit" Value="New Session" class="button"
 		name="newBtn" />
-
 </form>
-<script type="text/javascript" src="jquery-1.11.2.min.js"> </script>
-<script>
-var auto_refresh = setInterval(
-		function()
-		{
-			$('#status_query').load('status_query.php');
-		}, 5000);
-		$(document).ready(function(){
-			$('#status_query').load('status_query.php')
-		})
-</script>
 
 <body>
 	<div id="status_query" align="center"></div>
 </body>
 
 <footer align='Center'> 
-© Copyright 2015 Joshith R K, all rights reserved 
+© Copyright 2015 Joshith (joe.cet@gmail.com), all rights reserved 
 </footer>
+
+<script type="text/javascript" src="jquery-1.11.2.min.js"> </script>
+<script>
+var auto_refresh = setInterval( function () {
+	$.ajax( {
+		url : 'status_query.php',
+		type : 'GET',
+		dataType : 'html',			
+		success : function( resp ) {
+			<?php 
+			for ($i = 1; $i<= MAX_KART_NUM; $i++) {
+				echo "$('#lap_count".$i."').html($('#lap_count".$i."' , resp).html())\n";
+				echo "$('#battery_level".$i."').html($('#battery_level".$i."' , resp).html())\n";
+			}
+			?>
+		}
+	})
+	} , 5000)
+$(document).ready(function () {
+	$.ajax( {
+		url : 'status_query.php',
+		type : 'GET',
+		dataType : 'html',			
+		success : function( resp ) {
+			<?php 
+			for ($i = 1; $i<= MAX_KART_NUM; $i++) {
+				echo "$('#lap_count".$i."').html($('#lap_count".$i."' , resp).html())\n";
+				echo "$('#battery_level".$i."').html($('#battery_level".$i."' , resp).html())\n";
+			}
+			?>
+			}
+	})
+	})
+
+</script>
 </html>

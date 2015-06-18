@@ -1,11 +1,9 @@
 <?php
+define (MAX_KART_NUM, 8);
 global $kart_drv_name;
 $defaultName = "Name";
 $UPLOAD_DIR = "/var/www/uploads/";
 $kart_drv_name = include($_SERVER['DOCUMENT_ROOT']."/config.php");
-
-//$kart_drv_name = array ($defaultName, $defaultName, $defaultName, $defaultName,
-//						$defaultName, $defaultName, $defaultName, $defaultName);
 
 function sendHttpRequest_internal($cmd) {
 	global $kart_drv_name;
@@ -68,14 +66,34 @@ function sendHttpRequest_internal($cmd) {
 }
 
 function sendHttpRequest($cmd) {
-	return sendHttprequest_internal($cmd);
-	//return True;
+	//return sendHttprequest_internal($cmd);
+	return True;
 }
 
 if (FALSE == sendHttpRequest("STATUS:") ) {
 	echo "Failed to send STATUS request <br>";
 }
 
-//echo json_encode($lapCounts);
+echo "<html>";
+echo "<div>";
+for ($i = 1; $i <= MAX_KART_NUM; $i++) {
+	echo "<div id=\"lap_count".$i."\">";
+	if ((int)$kart_drv_name["LAPCOUNT_KART".$i] == 0) {
+		echo "-";
+	} else {
+		echo $kart_drv_name["LAPCOUNT_KART".$i];
+	}
+	echo "</div>";
+	echo "<div id=\"battery_level".$i."\">";	
+	if ((int)$kart_drv_name["BATLEVEL_KART".$i] == 0) {
+		echo "-";
+	} else {
+		echo $kart_drv_name["BATLEVEL_KART".$i]."%";
+	}
+	echo "</div>";
+}
+echo "</div>";
+echo "</html>";
 
+//echo json_encode($lapCounts);
 ?>

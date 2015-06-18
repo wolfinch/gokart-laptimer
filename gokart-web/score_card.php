@@ -88,6 +88,27 @@
 	border-style: solid;
 	border-width: 0px;
 }
+
+.tg-inner {
+	width: 10%;
+	border-collapse: collapse;
+	border-spacing: 0;
+	border-color: #aabcfe;
+	margin: 0px 0px;
+	align: left;
+	text-align: left;
+}
+
+.tg-inner td {
+	vertical-align: middle;
+	padding: 0px 0px;
+	font-family: Arial, sans-serif;
+	font-weight: bold;
+	font-size: 10px;
+	overflow: hidden;
+	color: #039;
+	border-width: 0px;	
+}
 </style>
 <body>
 	<table class="tg">
@@ -181,16 +202,15 @@
 				return $this->hallBestLapNum;
 			}
 		};
-
+		
 		$result_array = array();
-
 		$UPLOAD_DIR = "uploads/";
+		global $kart_drv_name;
 		//$config = include 'config.php';
 		// Get the configured names
 		$kart_drv_name = include($_SERVER['DOCUMENT_ROOT']."/config.php");
 
-		echo "<br> <br> <br>";
-		echo "<br> <br><br>";
+		echo "<br> <br>";
 
 		//if the dir doesn't exist, return
 		if(False === is_dir($UPLOAD_DIR)) {
@@ -320,6 +340,8 @@
 				$total_lap_time = (int)($kart_info->irTotalLapTimeGet()/60).":".
 						($kart_info->irTotalLapTimeGet() -
 						(((int)($kart_info->irTotalLapTimeGet()/60))*60));
+				// update the battery level and lapcount
+				$kart_drv_name['LAPCOUNT_KART'.$kart_num] = $kart_info->irLapCountGet();
 				$ir = true;		
 			}else {
 				$best_lap_time = (int)(($kart_info->hallBestlapTimeGet()/60)).":".
@@ -329,8 +351,11 @@
 				$total_lap_time = (int)($kart_info->hallTotalLapTimeGet()/60).":".
 						($kart_info->hallTotalLapTimeGet() -
 						(((int)($kart_info->hallTotalLapTimeGet()/60))*60));
-				$ir = false;								
+				$ir = false;		
+				$kart_drv_name['LAPCOUNT_KART'.$kart_num] = $kart_info->hallLapCountGet();				
 			}
+			$kart_drv_name['BATLEVEL_KART'.$kart_num] = $bat_level;
+			
 			//echo "<br>laplist count:".count($ir_lap_list)." <br>";
 
 			$position++;
@@ -340,7 +365,7 @@
 			echo "<td class=\"tg-5rcs\">".$kart_num."</td>";
 			echo "<td class=\"tg-5rcs\">".$position."</td>";
 			echo "<td class=\"tg-5rcs\">".$kart_drv_name['KART'.$kart_num]."</td>";
-			echo "<td class=\"tg-".(($ir === true)?"5":"6")."rcs\">".$best_lap_time." (Best)</td>";
+			echo "<td class=\"tg-".(($ir === true)?"5":"6")."rcs\"><table class=\"tg-inner\"><tr><td >Best Lap </td></tr></table>".$best_lap_time."</td>";
 			echo "<td class=\"tg-".(($ir === true)?"5":"6")."rcs\">".$best_lap_num ."</td>";
 			echo "<td class=\"tg-".(($ir === true)?"5":"6")."rcs\">".$total_lap_time."</td>";
 			echo "<td class=\"tg-5rcs\"></td>";
@@ -379,6 +404,9 @@
 			//echo "<br>";
 		}
 		unset($result_array);
+		// store the config
+		file_put_contents('config.php', '<?php return ' . var_export($kart_drv_name, true) . '; ?>');
+		
 		//var_dump($result_array);
 		?>
 

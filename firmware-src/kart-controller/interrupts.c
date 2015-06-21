@@ -32,6 +32,8 @@ volatile uint8_t ir_state_pos = 0;
 volatile uint8_t hall_detect = false;
 volatile gim_timeval ir_cur_hit;
 volatile gim_timeval hall_cur_hit;
+volatile uint8_t ir_lap_count;
+volatile uint8_t hall_lap_count;
 volatile uint16_t jiffies = 0x0; /// Jiffies are the Timebase (TMR1)Interrupt count
 volatile kart_data_t data[MAX_PAYLOAD_COUNT]; // Payload list to send
 volatile int8_t      data_count = 0;
@@ -247,13 +249,20 @@ handle_hall_cmd(void) {
         return;
     }
 
-    ir_cur_code         = 0;
+    if (hall_lap_count < 64) {
+        hall_lap_count++; // Set lap_count wraparound = 63
+    } else {
+        hall_lap_count = 0;
+    }
+    
     hall_cur_hit.sec    = jiffies;
     hall_cur_hit.m_sec  = (TMR1H - 0xB); // Adjust preset;
     data[data_count].battery_level = battery_level;
     data[data_count].time = hall_cur_hit;
     data[data_count].dev_id = devId;
     data[data_count].detect_type = HALL;
+    data[data_count].detect_code = 0;
+    data[data_count].lap_count = hall_lap_count;
     data_count++; //new data to send
 }
 

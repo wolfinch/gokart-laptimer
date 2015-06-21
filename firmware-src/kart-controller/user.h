@@ -177,6 +177,8 @@ typedef struct gim_kart_data_ {
     uint8_t     dev_id        :5;
     uint8_t     detect_type   :1;
     uint8_t     detect_code   :2;   //Used for IR code, section detection
+    uint8_t     lap_count     :6;   // supports max 64 laps before wraparound
+    uint8_t     seed          :2;   //randomness. To avoid h/w dropping the packet in case of resend
 }kart_data_t;
 
 #endif	/* USER_H */

@@ -26,11 +26,16 @@ extern volatile uint16_t jiffies;
 extern volatile gim_timeval ir_cur_hit;
 extern volatile gim_timeval hall_cur_hit;
 
+extern volatile uint8_t ir_lap_count;
+extern volatile uint8_t hall_lap_count;
+
 //uint8_t     hall_send_success = true;
 extern volatile kart_data_t data[MAX_PAYLOAD_COUNT];                       // Payload list to send
 extern volatile int8_t      data_count;
 
 volatile uint8_t     battery_level = 0xff;
+uint8_t              gim_seed;
+
 /* TMR1 Tick time = 8uS 
  * Gives .5242Sec TMR1 Overflow time (Interrupt Time - clock resolution)
  * if we inc jiffies every int, gives an error of 1/40 Sec.
@@ -63,15 +68,17 @@ void nrf_print_details() {
 void nrf24_send_detect_data(void ) {
     kart_data_t rx_data;
     uint8_t retry;
-    uint8_t d_cnt = data_count -1;
+    uint8_t d_cnt = data_count;
     
     xprintf("%s: ENTER data_count:%d\r\n", "nrf24_send_detect_data", data_count);
     
     do {
+        d_cnt--;
         /* Automatically goes to TX mode */
-        xprintf("bat_level: 0x%x sec: %d mS:%d type:0x%x code: 0x%x\r\n", data[d_cnt].battery_level, data[d_cnt].time.sec,
-                data[d_cnt].time.m_sec, data[d_cnt].detect_type, data[d_cnt].detect_code);
-        
+        xprintf("bat_level: 0x%x sec: %d mS:%d type:0x%x code: 0x%x lap_cnt:%d\r\n", data[d_cnt].battery_level, data[d_cnt].time.sec,
+                data[d_cnt].time.m_sec, data[d_cnt].detect_type, data[d_cnt].detect_code, data[d_cnt].lap_count);
+
+        data[d_cnt].seed = gim_seed;
         nrf24_send((uint8_t *) (&data[d_cnt]));
         while (nrf24_isSending());
         /* Make analysis on last tranmission attempt */
@@ -79,7 +86,6 @@ void nrf24_send_detect_data(void ) {
             xprintf("Message is lost ...\r\n");
             return;
         }
-        
 #if 0
         /* Wait for transmission to end */
         xprintf("nrf24_isSending\r\n");
@@ -104,6 +110,7 @@ void nrf24_send_detect_data(void ) {
 #endif
         nrf24_powerUpRx();
         retry = 20;
+        gim_seed++;
         do {
             if (nrf24_dataReady()) {
                 nrf24_getData((uint8_t *) & rx_data);
@@ -122,7 +129,7 @@ void nrf24_send_detect_data(void ) {
             retry--;
             __delay_ms(5); // wait and retry
         } while (retry);
-    } while (data_count > 0);
+    } while (d_cnt > 0);
 
     xprintf("Failed reciving response \r\n");   
  }
@@ -152,15 +159,23 @@ handle_ir_cmd (void) {
 
         xprintf("*** Valid IR lap!!***\r\n");
         is_ir_lap_valid = true;
+        if (ir_lap_count<64) {
+            ir_lap_count++;     // Set lap_count wraparound = 63
+        } else {
+            ir_lap_count = 0;
+        }
+        
         data[data_count].time.sec = ir_first_hit.sec/2 + ir_cur_hit.sec/2 + 
                 (ir_first_hit.sec%2 | ir_cur_hit.sec%2); // Take avg. (adjust reminder =>.5+.5 = .5)
         data[data_count].time.m_sec = ir_first_hit.m_sec / 2 + ir_cur_hit.m_sec / 2; // Take avg.
                 
         /* Create send data and insert */
+        battery_level = read_battery_level();
         data[data_count].battery_level = battery_level;
         data[data_count].dev_id = devId;
         data[data_count].detect_type = IR;
         data[data_count].detect_code = ir_cur_code;
+        data[data_count].lap_count = ir_lap_count;
         data_count++; //new data to send
         return;
     }

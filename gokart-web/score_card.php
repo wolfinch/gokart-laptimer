@@ -145,30 +145,58 @@
 			public function __construct($Id) {
 				$this->kartId = $Id;
 			}
+			public function processLapData () {
+				/* Find total laptime (LastLap- Firstlap )*/
+				$this->irTotalLapTime = round($this->irLapTime[$this->irLapCount-1] - $this->irLapTime[0], 3);
+				$this->hallTotalLapTime = round($this->hallLapTime[$this->hallLapCount-1] - $this->hallLapTime[0], 3);
+
+				/* Find best laptime */
+				$prevLapTime = 0;
+				for($lapNum=0; $lapNum <= $this->irLapCount; $lapNum++) {
+					//echo "<br>lapNum".$lapNum;
+					if (($prevLapTime != 0) && ($this->irLapTime[$lapNum] != 0)) { // !First lap hit
+						if ($this->irBestLapTime <= 0) {
+							$this->irBestLapTime = round(($this->irLapTime[$lapNum] - $prevLapTime), 3);
+						} else if (($this->irLapTime[$lapNum] - $prevLapTime) != 0 &&
+								 (($this->irLapTime[$lapNum] - $prevLapTime) < $this->irBestLapTime)) {
+							$this->irBestLapTime = round(($this->irLapTime[$lapNum] - $prevLapTime), 3) ;
+							$this->irBestLapNum = $lapNum ;
+						}
+					}
+					if ($this->irLapTime[$lapNum] != 0) {
+						$prevLapTime = $this->irLapTime[$lapNum];
+					}					
+				}
+				
+				$prevLapTime = 0;
+				for($lapNum=0; $lapNum <= $this->hallLapCount; $lapNum++) {
+					//echo "<br>lapNum".$lapNum."time:".$this->hallLapTime[$lapNum];
+					if (($prevLapTime != 0) && ($this->hallLapTime[$lapNum] != 0)) { // !First lap hit
+						if ($this->hallBestLapTime <= 0) {
+							$this->hallBestLapTime = round(($this->hallLapTime[$lapNum] - $prevLapTime), 3);
+						} else if (($this->hallLapTime[$lapNum] - $prevLapTime) != 0 &&
+								 (($this->hallLapTime[$lapNum] - $prevLapTime) < $this->hallBestLapTime)) {
+							$this->hallBestLapTime = round(($this->hallLapTime[$lapNum] - $prevLapTime), 3) ;
+							$this->hallBestLapNum = $lapNum ;
+						}
+					}
+					if ($this->hallLapTime[$lapNum] != 0) {
+						$prevLapTime = $this->hallLapTime[$lapNum];
+					}					
+				}
+			}			
 			/* TODO: FIXME: Caveat - No support for multiple IR sections */
 			public function irLapAdd ($lapTime, $count) {
 				$this->irLapTime[$count] = $lapTime;
-				$this->irLapCount++;
-				$this->irTotalLapTime += $lapTime;
-				if ($this->irBestLapTime === 0) {
-					$this->irBestLapTime = $lapTime;
-					$this->irBestLapNum	 = $count;
-				} elseif ($lapTime < $this->irBestLapTime) {
-					$this->irBestLapTime = $lapTime;
-					$this->irBestLapNum	 = $count;
+				if ($count > $this->irLapCount) {				
+					$this->irLapCount = $count;
 				}
 				//echo "<br>ir lap add: list:".var_dump($this->irLapTime);
 			}
 			public function hallLapAdd ($lapTime, $count) {
 				$this->hallLapTime[$count] = $lapTime;
-				$this->hallLapCount++;
-				$this->hallTotalLapTime += $lapTime;
-				if ($this->hallBestLapTime === 0) {
-					$this->hallBestLapTime = $lapTime;
-					$this->hallBestLapNum	 = $count;
-				}elseif ($lapTime < $this->hallBestLapTime) {
-					$this->hallBestLapTime = $lapTime;
-					$this->hallBestLapNum	= $count;
+				if ($count > $this->hallLapCount) {				
+					$this->hallLapCount = $count;
 				}
 			}
 			public function irLapCountGet () {
@@ -242,8 +270,8 @@
 			}
 			// read the array backward
 			//echo "FIRST kart_name: ".$kart_name."start_time:".$start_time."end_time:".$end_time."<br>";
-			//sample: KART:1:START_TIME:105.836:END_TIME:120.338:BAT:95:DET_TYPE:0:DET_CODE:1:
-			for ($i = count($file_array)-1; $i >=1; $i--) {
+			//sample: KART:1:TIME:105.836:LAP_NUM:120:BAT:95:DET_TYPE:0:DET_CODE:1:
+			for ($i =0; $i < count($file_array); $i++) {
 				$file_line = $file_array  [$i];
 				/* get the formatted contents from the file */
 				if ( FALSE == strtok ($file_line, ":")) {
@@ -251,13 +279,11 @@
 					continue;
 				}
 
-				//sample: KART:DEV2_KEY1:START_TIME:1428594608.534828:END_TIME:1428594767.840776:
-
 				$kart_num = (int)strtok  (":"); // name
 				strtok  (":");
-				$start_time = (float)strtok (":");
+				$curr_lap_time = (float)strtok (":");
 				strtok (":");
-				$end_time = (float)strtok (":");
+				$curr_lap_num = (float)strtok (":");
 				strtok (":");
 				$bat_level = (int)strtok (":");
 				strtok (":");
@@ -265,14 +291,13 @@
 				strtok (":");
 				$det_code	= (int)strtok (":");
 
-				if ($end_time == 0 || $start_time == 0 ) {
+				if ($curr_lap_time == 0 ) {
 					continue;
 				}
 
-				$lap_time = round(($end_time - $start_time), 4);
-				//echo "<br> kart_name: ".$kart_name."start_time:".$start_time.
-					//" end_time:".$end_time." bat_level:".$bat_level." det_type:".
-					//$det_type." det_code:".$det_code." lap_time: ".$lap_time."<br>";
+				//echo "<br> kart_name: ".$kart_name."time:".$curr_lap_time.
+					//" lap_num:".$curr_lap_num." bat_level:".$bat_level." det_type:".
+					//$det_type." det_code:".$det_code."<br>";
 
 				// get lap number
 				//sscanf($kart_name, "KART%d", );
@@ -285,10 +310,15 @@
 
 				if ($det_type == 0) { // IR
 					/* TODO: Add support for multiple IR sections */
-					$result_array[$kart_num]->irLapAdd($lap_time, $i);
+					$result_array[$kart_num]->irLapAdd($curr_lap_time, $curr_lap_num);
 				} else {
-					$result_array[$kart_num]->hallLapAdd($lap_time, $i);
+					$result_array[$kart_num]->hallLapAdd($curr_lap_time, $curr_lap_num);
 				}
+			}
+			
+			if ($result_array[$kart_num] != null) {
+				/* Do the calculations for the current kart */
+				$result_array[$kart_num]->processLapData();
 			}
 		}
 		//var_dump ($result_array);
@@ -372,24 +402,46 @@
 			echo "</tr>";
 			//Print last 4 laps
 			for ($i=(($ir === true)?$kart_info->irLapCountGet():$kart_info->hallLapCountGet()), 
-									$j=0; ($i >0) && ($j < 4); $i--, $j++) {
+									$j=0; ($i >0) && ($j < 400); $i--, $j++) {
 				echo "<tr>";
 				echo "<td class=\"tg-if20\"></td>";
 				echo "<td class=\"tg-if20\"></td>";
 				echo "<td class=\"tg-if20\"></td>";
+				$k = $i;
+				$ir_lap_time   = 0;
+				$hall_lap_time = 0;
+				while($k) {
+					$k--;
+					if (($ir_lap_time == 0) && $ir_lap_list[$k] && $ir_lap_list[$i]) {
+						$ir_lap_time = round($ir_lap_list[$i] - $ir_lap_list[$k], 3);
+					}
+					if (($hall_lap_time == 0) && $hall_lap_list[$k] && $hall_lap_list[$i]) {
+						$hall_lap_time = round($hall_lap_list[$i] - $hall_lap_list[$k], 3);
+					}
+					
+					/* 0th Hit time will always be 0. So, adjust the 1st laptime accordingly */
+					if ($i == 1) {
+						$hall_lap_time = round($hall_lap_list[$i], 3);
+						$ir_lap_time   = round($ir_lap_list[$i], 3);
+					}
+					
+					if($ir_lap_time && $hall_lap_time)
+						break;					
+				}
+				
 				if ($ir == true) {
-					echo "<td class=\"tg-if20\">".(int)($ir_lap_list[$i]/60),":",
-							($ir_lap_list[$i] - (((int)($ir_lap_list[$i]/60))*60));
-					if ($hall_lap_list[$i] != 0) {									
-						echo "  (<font color=\"#E89619\" size=\"2\">".(int)($hall_lap_list[$i]/60),":",
-								($hall_lap_list[$i] - (((int)($hall_lap_list[$i]/60))*60))."</font>)</td>";
+					echo "<td class=\"tg-if20\">".(int)($ir_lap_time/60),":",
+							($ir_lap_time - (((int)($ir_lap_time/60))*60));
+					if ($hall_lap_time != 0) {									
+						echo "  (<font color=\"#E89619\" size=\"2\">".(int)($hall_lap_time/60),":",
+								($hall_lap_time - (((int)($hall_lap_time/60))*60))."</font>)</td>";
 					}
 				} else {
-					echo "<td class=\"tg-if20\"><font color=\"#E89619\">".(int)($hall_lap_list[$i]/60),":",
-							($hall_lap_list[$i] - (((int)($hall_lap_list[$i]/60))*60))."</font>";
-					if ($ir_lap_list[$i] != 0) {		
-						echo "  (<font size=\"2\">".(int)($ir_lap_list[$i]/60),":",
-								($ir_lap_list[$i] - (((int)($ir_lap_list[$i]/60))*60))."</font>)</td>";
+					echo "<td class=\"tg-if20\"><font color=\"#E89619\">".(int)($hall_lap_time/60),":",
+							($hall_lap_time - (((int)($hall_lap_time/60))*60))."</font>";
+					if ($ir_lap_time != 0) {
+						echo "  (<font size=\"2\">".(int)($ir_lap_time/60),":",
+								($ir_lap_time - (((int)($ir_lap_time/60))*60))."</font>)</td>";
 					}
 				}
 				echo "<td class=\"tg-if20\">".$i."</td>";

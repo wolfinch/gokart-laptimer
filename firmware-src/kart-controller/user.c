@@ -105,7 +105,7 @@ inline void nrf24_csn_digitalWrite(uint8_t state)
 
 nrf24_mod_init() {
     uint8_t     rx_mac[5] = {"Node"};
-    uint8_t     tx_mac[5] = {"Base0"};    
+    uint8_t     tx_mac[5] = {0xAB, 0xCD, 0xAB, 0xCD, 0x71};//{"Base0"};    
     rx_mac[4]   =devId+48;          // Make unique RxMac with nodeid
     
     /* SPI config*/
@@ -125,7 +125,7 @@ nrf24_mod_init() {
     nrf24_init();
 
     /* RF channel: #10 , payload length: 5 */
-    nrf24_config(10, 5);
+    nrf24_config(10, 6);
 
     /* Set the module's own address */
     nrf24_rx_address(rx_mac);
@@ -149,8 +149,6 @@ read_battery_level (void) {
 }
 
 void ADCInit () {
-    ANS3  = 1;          //Setting AN3 analog
-
    // ADCS    = 0b001;      // ADC Clock Fosc/8 - 2uS conversion Time
     ADCON1    = 0b00010000; //ADCS    = 0b010;
    // ADFM    = 0;        // MSB 7 bits in ADRESH   
@@ -162,8 +160,6 @@ void ADCInit () {
 
 void HallInit () {
     /* HALL connected to RA2 for ext INT*/
-    ANS2    = 0;        //OFF
-    TRISA2  = 1;        //i/p
     INTEDG = 0;    // Falling edge Trigger
     INTCONbits.INTF = 0;
     INTCONbits.INTE = 1; // External int enable on RA2
@@ -171,17 +167,14 @@ void HallInit () {
 
 void
 IrInit(void) {
-    ANS3  = 0;
-    TRISA3= 1; //i/p
     IOCA3 = 1; // IOC for RA3, IR_IN
 }
 
 void InitApp(void) {
     /* Set clock freq of Int Osc*/
     OSCCONbits.IRCF = 0x6; //4MHz Internal
-
     /* Turn OFF unwanted Modules*/
-    ANSEL = 0b00000000; // Analog OFF except AN3 (RA4))
+    ANSEL = 0b00001000; // Analog OFF except AN3 (RA4)) - ADC
     ANSELH = 0;
     CCP1CONbits.CCP1M = 0x0; // CCP module is off pins in Digital I/O
     C1ON = 0; // COmparators are off
@@ -196,7 +189,7 @@ void InitApp(void) {
     OPTION_REGbits.INTEDG = 1;
     /* Initialize port states*/
     TRISB = 0b10010000; // On PortB, RB6(SPI) must be clear.
-    TRISA = 0b00111101; // on PortA, set all o/p except RA0, RA2, RA4, RA5 (RA3 is always2, i/p only)
+    TRISA = 0b00111101; // on PortA, set i/p - RA0, RA2 (HALL), RA4, RA5 (RA3 is always2, i/p only - IR)
     TRISC = 0b00000000; //bit 7 must be clear for SPI (SDO), RC6 - CSN
 
 

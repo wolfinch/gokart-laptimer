@@ -26,6 +26,9 @@
 #define MAX_PAYLOAD_COUNT 40
 #define PACKET_SIZE      256
 #define MAX_KARTS        32
+#define MAX_TIME         (struct timeval) {0x7FFF, 999000} //timeval
+#define MAX_LAP_COUNT    64
+
 #define PISTILLPATH             "/usr/bin/raspistill"
 #define PISTILLARGS             "-vf -o "
 #define OUTDIR                  "/etc/gokart/data/"
@@ -67,11 +70,16 @@ typedef struct gim_kart_data_ {
     uint8_t     dev_id        :5;
     uint8_t     detect_type   :1;
     uint8_t     detect_code   :2;   //Used for IR code, section detection
+    uint8_t     lap_count     :6;   // supports max 64 laps
+    uint8_t     seed          :2;   //randomness. To avoid h/w dropping the packet in case of resend
 }kart_data_t;
 
 typedef struct gim_response_list_ {
     kart_data_t tx_data;
-    int         retry_count;
+    uint8_t         retry_count;
+    uint8_t         resp_sent       :1;
+    uint8_t         data_processed  :1;
+    uint8_t         padding         :6;
     struct gim_response_list_ *pnext;
     struct gim_response_list_ *pprev;
 }gim_response_list_t;
@@ -79,8 +87,10 @@ typedef struct gim_response_list_ {
 typedef struct karts_ {
     uint8_t             kart_id;
     uint8_t             num_laps;
-    struct timeval      lap_time;
-    struct timeval      new_lap_time;
+    uint8_t             num_laps_offset;
+    struct timeval      prev_lap_time;
+    struct timeval      curr_lap_time;
+    struct timeval      time_offset;    
     uint8_t             battery_level;
     uint8_t             detect_type     :1;
     uint8_t             detect_code     :2;
@@ -89,5 +99,7 @@ typedef struct karts_ {
 }karts_t;
 
 int gokart_process_data(void);
+void resp_list_add (gim_response_list_t *node);
+void resp_list_remove (gim_response_list_t *node);
 
 #endif

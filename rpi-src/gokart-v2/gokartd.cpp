@@ -1,7 +1,7 @@
 /*
  ******************************************************************************
  ******************************************************************************
- ***Gokartd - raspi conroller daemon for gokart lap-detector-iMproved (GLTDiM**
+ ***Gokartd - raspi conroller daemon for gokart lap-detector-iMproved (GLTDiM)*
  ***gokartd.cpp ***************************************************************
  ***Copyright (C) 2015 Joshith (joe.cet@gmail.com)*****************************
  ******************************************************************************
@@ -31,29 +31,37 @@
 static struct option long_options[] = {
         {"help", no_argument, NULL, 'h'},
         {"version", no_argument, NULL, 'v'},
-        {"repeat", required_argument, NULL, 'r'},
         {"daemon", no_argument, NULL, 'd'},
         {0, 0, 0, 0}
 };
 
 using namespace std;
 uint8_t     tx_addr[6] = {"Node1"};
-uint8_t     rx_addr[6] = {"Base0"};
+//uint8_t     rx_addr[6] = {"Base0"};
+uint8_t     rx_addr[6] = {0xAB, 0xCD, 0xAB, 0xCD, 0x71};
+
 FILE        *g_log_fd  = NULL;
 
-kart_data_t         rx_data[MAX_PAYLOAD_COUNT];
-uint16_t            rx_data_count = 0;
+//kart_data_t         rx_data[MAX_PAYLOAD_COUNT];
+//uint16_t            rx_data_count = 0;
 gim_response_list_t *resp_list_head = NULL;
+gim_response_list_t *resp_list_tail = NULL;
 uint16_t            resp_list_cnt = 0;
 
 void resp_list_remove (gim_response_list_t *node) {
     if (node) {
+        if(!(node->resp_sent && node->data_processed)) {
+            return;                 //remove only if both are done
+        }
+
         if(node->pprev)
             node->pprev->pnext = node->pnext;
         else
             resp_list_head = node->pnext;
         if(node->pnext)
             node->pnext->pprev = node->pprev;
+        else
+            resp_list_tail = node->pprev;
 
         free(node);
         resp_list_cnt--;
@@ -67,6 +75,9 @@ void resp_list_add (gim_response_list_t *node) {
         node->pnext = resp_list_head;
         node->pprev = NULL;
         resp_list_head = node;
+        if(!resp_list_tail)
+            resp_list_tail = node;
+        node->resp_sent = node->data_processed = false;  // for 2 Fixed uses (1. for sending ACK, 2. processing data)
         resp_list_cnt++;
     }
 }
@@ -76,24 +87,24 @@ RF24 radio(25, 0);      // SPIDEV constructor, spidev handles CSN
 void gokart_add_response (kart_data_t *rx_data) ;
 
 void gokart_rx () {
-
-    if (rx_data_count >= MAX_PAYLOAD_COUNT) {
+    kart_data_t rx_data;
+    if (resp_list_cnt >= MAX_PAYLOAD_COUNT) {
         log_print ("ERROR: MAX payload count exceed \n");
         return;
     }
 
     // Grab the response, compare, and send to debugging spew
-    radio.read( &rx_data[rx_data_count], sizeof(rx_data));
+    radio.read( &rx_data, sizeof(rx_data));
 
     // Spew it
-    log_print("RX Data: dev_id: %d, bat_level: 0x%x sec: %d mS:%d type:0x%x code:0x%x\r\n",
-        rx_data[rx_data_count].dev_id, rx_data[rx_data_count].battery_level, rx_data[rx_data_count].time.sec,
-        rx_data[rx_data_count].time.m_sec, rx_data[rx_data_count].detect_type, rx_data[rx_data_count].detect_code);
+    log_print("RX Data: dev_id: %d, bat_level: 0x%x sec: %d mS:%d type:0x%x code:0x%x lap_num:%d seed:%d\r\n",
+        rx_data.dev_id, rx_data.battery_level, rx_data.time.sec,
+        rx_data.time.m_sec, rx_data.detect_type, rx_data.detect_code,
+        rx_data.lap_count, rx_data.seed);
 
-    //Now Send the response back
-    gokart_add_response(&rx_data[rx_data_count]);
+    //Now add to the response list
+    gokart_add_response(&rx_data);
 
-    rx_data_count++;
 }
 
 void
@@ -106,14 +117,14 @@ gokart_add_response (kart_data_t *rx_data) {
     }
 
     resp_node->tx_data = *rx_data;
-    /*Alter something in the packet. Some known issue in h/w causes pkts with same contents to drop */
-    resp_node->tx_data.battery_level = 0xff;
+    /*Alter something in the packet. Some issue in h/w causes pkts with same contents to drop */
+    resp_node->tx_data.seed++ ;
     resp_node->retry_count           = 0;
     resp_list_add (resp_node);
 }
 
 void gokart_send_response(void) {
-    gim_response_list_t *tmp, *resp_list = resp_list_head;
+    gim_response_list_t *tmp, *resp_list = resp_list_tail;
 
     if (!resp_list)
         return;
@@ -134,22 +145,24 @@ void gokart_send_response(void) {
         if (!ok){
             log_print("failed to send response! tx_addr: %s\n", tx_addr);
             radio.print_observe_tx();
-            if (resp_list->retry_count++ > 70) {
+            if (++resp_list->retry_count > 70) {
+                resp_list->resp_sent = true; // consider it done. :-P
                 tmp = resp_list;
-                resp_list = resp_list->pnext;
+                resp_list = resp_list->pprev;
                 resp_list_remove(tmp);
             } else {
-                resp_list = resp_list->pnext;
+                resp_list = resp_list->pprev;
             }
         } else {
             log_print ("Response success! tx_addr: %s\n", tx_addr);
+            resp_list->resp_sent = true;
             tmp = resp_list;
-            resp_list = resp_list->pnext;
+            resp_list = resp_list->pprev;
             resp_list_remove(tmp);
         }
 
         radio.startListening();
-        usleep(1000);
+        usleep(5000);
         if(radio.available())
             gokart_rx();
 
@@ -163,7 +176,7 @@ nrf24_init(void) {
 
     // optionally, increase the delay between retries & # of retries
     radio.setRetries(15,15);
-    radio.setPayloadSize(5);
+    radio.setPayloadSize(6);
     radio.setCRCLength(RF24_CRC_8);
     radio.setChannel(10);
     // Dump the configuration of the rf unit for debugging
@@ -236,11 +249,11 @@ int main (int argc, char *argv[])
         }
     }
 
-    //Change CDW to OUTDIR
-    //if(chdir(OUTDIR)) {
-      //  log_print("Couldn't Change CWD to %s errno: %d\n", OUTDIR, errno);
-        //exit (-1);
-    //}
+    //Change CWD to OUTDIR
+    if(chdir(OUTDIR)) {
+        log_print("Couldn't Change CWD to %s errno: %d\n", OUTDIR, errno);
+        exit (-1);
+    }
 
     log_print("CWD: %s\n", getcwd(buf, 128));
 
@@ -252,7 +265,7 @@ int main (int argc, char *argv[])
     radio.startListening();
     log_print ("RF24: Listening \n");
     while (1) {
-        while (!radio.available() && !resp_list_head && !rx_data_count) {
+        while (!radio.available() && !resp_list_head ) {
             usleep (100);
         }
 
@@ -264,7 +277,7 @@ int main (int argc, char *argv[])
             gokart_send_response();
         }
 
-        if (rx_data_count) {
+        if (resp_list_head) {
             gokart_process_data();
         }
     }

@@ -88,6 +88,8 @@ typedef struct karts_ {
     uint8_t             kart_id;
     uint8_t             num_laps;
     uint8_t             num_laps_offset;
+    uint8_t             curr_lap_count;
+    uint8_t             lap_num_wrap_count;
     struct timeval      prev_lap_time;
     struct timeval      curr_lap_time;
     struct timeval      time_offset;    

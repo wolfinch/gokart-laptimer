@@ -137,6 +137,8 @@ gokart_process_data(void)
 
             this_kart->num_laps         = 0;
             this_kart->num_laps_offset  = one_data->lap_count;
+            this_kart->lap_num_wrap_count = 0;
+            this_kart->curr_lap_count     = 0;
             this_kart->prev_lap_time    = this_kart->curr_lap_time = (struct timeval){0, 0};
             this_kart->time_offset      = tv_real;
 
@@ -184,9 +186,6 @@ gokart_process_data(void)
             log_print ("wrapped around. real_time.S: %d, adj_time.S: %d offset.S:%d\n", (int)tv_real.tv_sec, (int)tv.tv_sec, (int)this_kart->time_offset.tv_sec);
         }
 
-        session_lap_count = (one_data->lap_count >= this_kart->num_laps_offset) ? (one_data->lap_count - this_kart->num_laps_offset):
-                        (MAX_LAP_COUNT - this_kart->num_laps_offset + one_data->lap_count);
-
         /* Check for duplicate lap data.
          * Wraparound time for timer is 9Hrs.
          * This is not a fool-proof idea for duplicates, but handle most other tricky cases
@@ -210,6 +209,14 @@ gokart_process_data(void)
             this_kart->curr_lap_time = tv;
         }
 
+        session_lap_count = (one_data->lap_count >= this_kart->num_laps_offset) ? (one_data->lap_count - this_kart->num_laps_offset):
+                        (MAX_LAP_COUNT - this_kart->num_laps_offset + one_data->lap_count);
+        /* Handle lap_count > MAX_LAP_COUNT */
+        if((this_kart->curr_lap_count == MAX_LAP_COUNT-1)) {
+            this_kart->lap_num_wrap_count++;
+        }
+        this_kart->curr_lap_count = session_lap_count;
+        session_lap_count = this_kart->lap_num_wrap_count* MAX_LAP_COUNT + session_lap_count;
         this_kart->num_laps++;
 
         fprintf (this_kart->fp, "KART:%d:TIME:%d.%d:LAP_NUM:%d:BAT:%d:DET_TYPE:%d:DET_CODE:%d:\n",

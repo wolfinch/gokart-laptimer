@@ -248,11 +248,6 @@ handleIRsignal(void) {
 
 inline void
 handle_hall_cmd(void) {
-    if (hall_lap_count < 64) {
-        hall_lap_count++; // Set lap_count wraparound = 63
-    } else {
-        hall_lap_count = 0;
-    }
     
     hall_cur_hit.sec    = jiffies;
     hall_cur_hit.m_sec  = (TMR1H - 0xB); // Adjust preset;
@@ -264,6 +259,7 @@ handle_hall_cmd(void) {
     data[data_rx_slot].lap_count = hall_lap_count;
     data_set(data_rx_slot);
     data_rx_slot = data_next_rx_slot;
+    hall_lap_count++; // Set lap_count wraparound = 63
     data_count++; //new data to send
 }
 

@@ -156,11 +156,6 @@ handle_ir_cmd (void) {
 
         xprintf("*** Valid IR lap!!***\r\n");
         is_ir_lap_valid = true;
-        if (ir_lap_count<64) {
-            ir_lap_count++;     // Set lap_count wraparound = 63
-        } else {
-            ir_lap_count = 0;
-        }
         
         data[data_rx_slot].time.sec = ir_first_hit.sec/2 + ir_cur_hit.sec/2 + 
                 (ir_first_hit.sec%2 | ir_cur_hit.sec%2); // Take avg. (adjust reminder =>.5+.5 = .5)
@@ -176,6 +171,7 @@ handle_ir_cmd (void) {
         data_set (data_rx_slot);
         data_rx_slot = data_next_rx_slot;
         data_count++; //new data to send
+        ir_lap_count++; // Set lap_count wraparound = 63
 
         return;
     }

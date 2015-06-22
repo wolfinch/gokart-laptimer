@@ -105,7 +105,7 @@ inline void nrf24_csn_digitalWrite(uint8_t state)
 
 nrf24_mod_init() {
     uint8_t     rx_mac[5] = {"Node"};
-    uint8_t     tx_mac[5] = {0xAB, 0xCD, 0xAB, 0xCD, 0x71};//{"Base0"};    
+    uint8_t     tx_mac[5] = {"Base0"};    
     rx_mac[4]   =devId+48;          // Make unique RxMac with nodeid
     
     /* SPI config*/
@@ -189,7 +189,7 @@ void InitApp(void) {
     OPTION_REGbits.INTEDG = 1;
     /* Initialize port states*/
     TRISB = 0b10010000; // On PortB, RB6(SPI) must be clear.
-    TRISA = 0b00111101; // on PortA, set i/p - RA0, RA2 (HALL), RA4, RA5 (RA3 is always2, i/p only - IR)
+    TRISA = 0b00111101; // on PortA, set i/p - RA0(KEY), RA2 (HALL), RA4(BAT), RA5 (RA3 is always2, i/p only - IR)
     TRISC = 0b00000000; //bit 7 must be clear for SPI (SDO), RC6 - CSN
 
 

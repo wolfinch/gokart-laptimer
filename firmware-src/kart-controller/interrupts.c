@@ -37,6 +37,9 @@ volatile uint8_t hall_lap_count;
 volatile uint16_t jiffies = 0x0; /// Jiffies are the Timebase (TMR1)Interrupt count
 volatile kart_data_t data[MAX_PAYLOAD_COUNT]; // Payload list to send
 volatile int8_t      data_count = 0;
+volatile uint8_t     data_valid_bitmap = 0;
+volatile uint8_t data_rx_slot       = 0;
+volatile uint8_t data_next_rx_slot  = 1;
 
 volatile uint8_t     battery_level = 0xff;
 uint8_t  IR_state = true;       //IR Pin State
@@ -245,10 +248,6 @@ handleIRsignal(void) {
 
 inline void
 handle_hall_cmd(void) {
-    if (data_count >= MAX_PAYLOAD_COUNT) {
-        return;
-    }
-
     if (hall_lap_count < 64) {
         hall_lap_count++; // Set lap_count wraparound = 63
     } else {
@@ -257,12 +256,14 @@ handle_hall_cmd(void) {
     
     hall_cur_hit.sec    = jiffies;
     hall_cur_hit.m_sec  = (TMR1H - 0xB); // Adjust preset;
-    data[data_count].battery_level = battery_level;
-    data[data_count].time = hall_cur_hit;
-    data[data_count].dev_id = devId;
-    data[data_count].detect_type = HALL;
-    data[data_count].detect_code = 0;
-    data[data_count].lap_count = hall_lap_count;
+    data[data_rx_slot].battery_level = battery_level;
+    data[data_rx_slot].time = hall_cur_hit;
+    data[data_rx_slot].dev_id = devId;
+    data[data_rx_slot].detect_type = HALL;
+    data[data_rx_slot].detect_code = 0;
+    data[data_rx_slot].lap_count = hall_lap_count;
+    data_set(data_rx_slot);
+    data_rx_slot = data_next_rx_slot;
     data_count++; //new data to send
 }
 

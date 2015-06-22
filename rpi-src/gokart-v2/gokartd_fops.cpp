@@ -134,7 +134,6 @@ gokart_process_data(void)
          * individual kart session (only file for this kart was deleted) */
         if (this_kart->kart_id == 0 || check_fd_fine (this_kart->fp)) {
             /* We are seeing this kart for the first time */
-           // strncpy (this_kart->kart_name, one_data->dev_id, 20);
 
             this_kart->num_laps         = 0;
             this_kart->num_laps_offset  = one_data->lap_count;

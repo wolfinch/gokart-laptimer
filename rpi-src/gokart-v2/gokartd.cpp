@@ -37,8 +37,8 @@ static struct option long_options[] = {
 
 using namespace std;
 uint8_t     tx_addr[6] = {"Node1"};
-//uint8_t     rx_addr[6] = {"Base0"};
-uint8_t     rx_addr[6] = {0xAB, 0xCD, 0xAB, 0xCD, 0x71};
+uint8_t     rx_addr[6] = {"Base0"};
+//uint8_t     rx_addr[6] = {0xAB, 0xCD, 0xAB, 0xCD, 0x71};
 
 FILE        *g_log_fd  = NULL;
 

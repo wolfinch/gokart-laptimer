@@ -159,7 +159,12 @@ uint8_t read_battery_level (void);
 }
 #endif
 
-#define MAX_PAYLOAD_COUNT 4
+#define MAX_PAYLOAD_COUNT 8
+extern volatile uint8_t     data_valid_bitmap;
+#define data_set(x) (data_valid_bitmap |= (1<<(x)))
+#define data_unset(x) (data_valid_bitmap &= ~(1<<(x)))
+#define is_data_valid(x) (data_valid_bitmap & (1<<(x)))
+#define data_ready() (data_valid_bitmap)
 
 typedef enum gim_detect_type_ {
      IR = 0,

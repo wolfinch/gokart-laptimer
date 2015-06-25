@@ -65,8 +65,8 @@ var auto_refresh = setInterval(
 			$('#score_card').load('score_card.php');
 		}, 5000);
 		$(document).ready(function(){
-			$('#score_card').load('score_card.php')
-		})
+			$('#score_card').load('score_card.php');
+		});
 </script>
 
 <body>

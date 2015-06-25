@@ -1,4 +1,8 @@
 #!/usr/bin/python
+################################################################################
+#  gokart-server - The light-weight server for servicing control/status cmds   #
+#  Copyright (C) 2015 Joshith (joe.cet@gmail.com)                              #
+################################################################################
 import SocketServer
 import os
 

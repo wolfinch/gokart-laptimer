@@ -5,10 +5,19 @@
 #
 # description: gokartd gathers statistics about the system stores this information
 # processname: gokartd
-# pidfile: /etc/gokart/var/run/collectd.pid
-# config:  /etc/gokart/etc/collectd.conf
-# command: /etc/gokart/sbin/collectd
+# pidfile: /etc/gokart/var/run/gokartd.pid
+# config:  /etc/gokart/etc/gokartd.conf
+# command: /etc/gokart/sbin/gokartd
 # rundata: /etc/gokart/data/
+### BEGIN INIT INFO
+# Provides:          gokartd 
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: gokartd
+# Description:       gokartd
+### END INIT INFO
 CONFIG_FILE=/etc/gokart/gokartd.conf
 PID_FILE=/etc/gokart/var/run/gokartd.pid
 LOCK_FILE=/etc/gokart/var/run/lock

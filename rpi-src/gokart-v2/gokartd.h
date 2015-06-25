@@ -56,12 +56,10 @@ typedef enum gim_detect_type_ {
      MAX_DET_TYPE
 } gim_detect_type;
 
-//#pragma pack(push,1)
 typedef struct gim_timeval_ {
     uint16_t sec;       // 1/2sec epoch counter
     uint8_t  m_sec;     // 2mS counter
 }PACKED gim_timeval;
-//#pragma pop(1)
 
 //#pragma pack(push,1)
 typedef struct gim_kart_data_ {
@@ -72,7 +70,7 @@ typedef struct gim_kart_data_ {
     uint8_t     detect_code   :2;   //Used for IR code, section detection
     uint8_t     lap_count     :6;   // supports max 64 laps
     uint8_t     seed          :2;   //randomness. To avoid h/w dropping the packet in case of resend
-}kart_data_t;
+}PACKED kart_data_t;
 
 typedef struct gim_response_list_ {
     kart_data_t tx_data;

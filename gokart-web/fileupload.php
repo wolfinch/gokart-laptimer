@@ -2,11 +2,11 @@
 // In PHP versions earlier than 4.1.0, $HTTP_POST_FILES should be used instead
 // of $_FILES.
 
-$UPLOAD_DIR = 'uploads/';
-$uploadfile = $UPLOAD_DIR . basename($_FILES['file']['name']);
+define(UPLOAD_DIR, 'uploads/');
+$uploadfile = UPLOAD_DIR . basename($_FILES['file']['name']);
 
-if(False === is_dir($UPLOAD_DIR)) {
-	mkdir($UPLOAD_DIR, 0777);
+if(False === is_dir(UPLOAD_DIR)) {
+	mkdir(UPLOAD_DIR, 0777);
 }
 
 echo '<pre>';

@@ -1,33 +1,35 @@
 <?php
 define (MAX_KART_NUM, 8);
-global $kart_drv_name;
-$defaultName = "Name";
+global $kart_session_data;
+global $kart_cfg_data;
+
 $UPLOAD_DIR = "/var/www/uploads/";
-$kart_drv_name = include($_SERVER['DOCUMENT_ROOT']."/config.php");
+$kart_session_data  = unserialize(include($_SERVER['DOCUMENT_ROOT']."/data_session.php"));
+$kart_cfg_data 		= unserialize(include($_SERVER['DOCUMENT_ROOT']."/data_config.php"));
 
 function sendHttpRequest_internal($cmd) {
-	global $kart_drv_name;
+	global $kart_session_data;
 
-	if (empty($kart_drv_name['SRV_IP'])) {
-		if(empty($kart_drv_name['SRV_NAME'])) {
-			echo "invalid hostname and ip:".$kart_drv_name['SRV_NAME']."<br>";
+	if (empty($kart_cfg_data->serverIp)) {
+		if(empty($kart_cfg_data->serverName)) {
+			echo "invalid hostname and ip:".$kart_cfg_data->serverName."<br>";
 			return FALSE;
 		}
-		$host_ip = gethostbyname ($kart_drv_name['SRV_NAME']);
+		$host_ip = gethostbyname ($kart_cfg_data->serverName);
 		if (!empty($host_ip)) {
-			echo "host IP resolved for hostname and ip:".$kart_drv_name['SRV_NAME'].$host_ip."<br>";
-			$kart_drv_name['SRV_IP'] = $host_ip;
+			//echo "host IP resolved for hostname and ip:".$kart_cfg_data->serverName.$host_ip."<br>";
+			$kart_cfg_data['SRV_IP'] = $host_ip;
 		} else {
-			echo "gethostbyname failure on host:".$kart_drv_name['SRV_NAME']."<br>";
+			echo "gethostbyname failure on host:".$kart_cfg_data->serverName."<br>";
 			return FALSE;
 		}
 	} else {
-		$host_ip = $kart_drv_name['SRV_IP'];
+		$host_ip = $kart_cfg_data->serverIp;
 	}
 
-	$port = $kart_drv_name['SRV_PORT'];
+	$port = $kart_cfg_data->serverPort;
 	if(empty($port)) {
-		echo "invalid port for host".$kart_drv_name['SRV_NAME'].$kart_drv_name['SRV_PORT']."<br>";
+		echo "invalid port for host".$kart_cfg_data->serverIp.$kart_cfg_data->serverPort."<br>";
 		return FALSE;
 	}
 
@@ -78,17 +80,17 @@ echo "<html>";
 echo "<div>";
 for ($i = 1; $i <= MAX_KART_NUM; $i++) {
 	echo "<div id=\"lap_count".$i."\">";
-	if ((int)$kart_drv_name["LAPCOUNT_KART".$i] == 0) {
+	if ((int)$kart_session_data[$i]->currLapCount == 0) {
 		echo "-";
 	} else {
-		echo $kart_drv_name["LAPCOUNT_KART".$i];
+		echo $kart_session_data[$i]->currLapCount;
 	}
 	echo "</div>";
 	echo "<div id=\"battery_level".$i."\">";	
-	if ((int)$kart_drv_name["BATLEVEL_KART".$i] == 0) {
+	if ((int)$kart_session_data[$i]->batLevel == 0) {
 		echo "-";
 	} else {
-		echo $kart_drv_name["BATLEVEL_KART".$i]."%";
+		echo $kart_session_data[$i]->batLevel."%";
 	}
 	echo "</div>";
 }

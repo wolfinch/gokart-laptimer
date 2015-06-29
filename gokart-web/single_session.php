@@ -201,37 +201,41 @@ input[type="text"]:disabled {
 </style>
 
 <?php
-define (MAX_KART_NUM, 8);
-define (DEFAULT_NAME, "Name");
-global $Started;
-global $kart_drv_name;
-$UPLOAD_DIR = "uploads/";
+require_once 'class_defines.php';
 
-$kart_drv_name = include($_SERVER['DOCUMENT_ROOT']."/config.php");
+//error_reporting(E_ERROR | E_PARSE);
+
+global $kart_session_data ;
+global $GlobalData;
+
+$GlobalData 		= unserialize(include($_SERVER['DOCUMENT_ROOT']."/data_config.php"));
+$kart_session_data  = unserialize(include($_SERVER['DOCUMENT_ROOT']."/data_session.php"));
+
+//var_dump($kart_session_data);
 
 function sendHttpRequest_internal($cmd) {
-	global $kart_drv_name;
+	global $GlobalData;
 
-	if (empty($kart_drv_name['SRV_IP'])) {
-		if(empty($kart_drv_name['SRV_NAME'])) {
-			echo "invalid hostname and ip:".$kart_drv_name['SRV_NAME']."<br>";
+	if (empty($GlobalData->serverIp)) {
+		if(empty($GlobalData->serverName)) {
+			echo "invalid hostname and ip:".$GlobalData->serverName."<br>";
 			return FALSE;
 		}
-		$host_ip = gethostbyname ($kart_drv_name['SRV_NAME']);
+		$host_ip = gethostbyname ($GlobalData->serverName);
 		if (!empty($host_ip)) {
-			echo "host IP resolved for hostname and ip:".$kart_drv_name['SRV_NAME'].$host_ip."<br>";
-			$kart_drv_name['SRV_IP'] = $host_ip;
+			echo "host IP resolved for hostname and ip:".$GlobalData->serverName.$host_ip."<br>";
+			$GlobalData->serverIp= $host_ip;
 		} else {
-			echo "gethostbyname failure on host:".$kart_drv_name['SRV_NAME']."<br>";
+			echo "gethostbyname failure on host:".$GlobalData->serverName."<br>";
 			return FALSE;
 		}
 	} else {
-		$host_ip = $kart_drv_name['SRV_IP'];
+		$host_ip = $GlobalData->serverIp;
 	}
 
-	$port = $kart_drv_name['SRV_PORT'];
+	$port = $GlobalData->serverPort;
 	if(empty($port)) {
-		echo "invalid port for host".$kart_drv_name['SRV_NAME'].$kart_drv_name['SRV_PORT']."<br>";
+		echo "invalid port for host".$GlobalData->serverPort.$GlobalData->serverPort."<br>";
 		return FALSE;
 	}
 
@@ -270,47 +274,40 @@ function sendHttpRequest_internal($cmd) {
 }
 
 function sendHttpRequest($cmd) {
-	return sendHttprequest_internal($cmd);
-	//return True;
+	//return sendHttprequest_internal($cmd);
+	return True;
 }
 
 // Cleanup session data
-function cleanupSession ($devName) {
-	global $kart_drv_name;
+function cleanupSession ($devId) {
+	global $kart_session_data;
 	
-	if ($devName == "all") {
+	/* $devId = -1 => all */
+	if ($devId == -1) {
 		// Clear the session data store
 		for ($i=1; $i <= MAX_KART_NUM; $i++) {
-			$kart_drv_name["KART".$i] = DEFAULT_NAME;
-			$kart_drv_name["STARTEDKART".$i] = false;
-			$kart_drv_name["BATLEVEL_KART".$i] = 0;
-			$kart_drv_name["LAPCOUNT_KART".$i] = 0;			
+			$kart_session_data[$i] = new sessionData($i);		
 		}
-	} else {
-			//$kart_drv_name[$devName] = DEFAULT_NAME;
-			$kart_drv_name["STARTED".$devName] = false;
-			$kart_drv_name["BATLEVEL_".$devName] = 0;
-			$kart_drv_name["LAPCOUNT_".$devName] = 0;	
 	}
 	
 	// Get the configured names
-	global $UPLOAD_DIR;
 
 	//if the dir doesn't exist, return
-	if(False === is_dir($UPLOAD_DIR)) {
+	if(False === is_dir(UPLOAD_DIR)) {
 		return;
 	}
 
-	$dir = new DirectoryIterator($UPLOAD_DIR);
+	$dir = new DirectoryIterator(UPLOAD_DIR);
 	foreach ($dir as $fileinfo) {
 		if ($fileinfo->isDot()) {
 			continue;
 		}
 		$file = $fileinfo->getPathname();
-		if($devName != "all" && (false === strpos($file, $devName))) {
+		
+		if($devId != -1 && (false === strpos($file, 'KART'.$devId))) {
 			continue;
 		}
-		//		echo $file."<br>";
+		//echo $file."<br>";		
 		unlink ($file);
 	}
 }
@@ -319,59 +316,82 @@ function cleanupSession ($devName) {
 //	echo "Failed to send STATUS request <br>";
 //}
 
-function handleSwitch($devName, $textBoxName) {
-	global $kart_drv_name;
+function handleSwitch($devId, $textBoxName) {
+	global $GlobalData;
+	global $kart_session_data;
 	$ret = TRUE;
 
-	if ("Server" != $_POST['serverName']) {
-		$kart_drv_name['SRV_NAME'] = $_POST['serverName'];
-	}
-	if ("Ip" != $_POST['serverIp']) {
-		$kart_drv_name['SRV_IP'] = $_POST['serverIp'];
-	}
-	if ("Port" != $_POST['serverPort']) {
-		$kart_drv_name['SRV_PORT'] = $_POST['serverPort'];
-	}
-
-	//echo("StartBtn: " . $kart_drv_name['DEV1'] . "<br/>\n\n");
-
-	if($kart_drv_name['STARTED'.$devName] == True) {
+	if($kart_session_data[$devId]->isStarted() == True) {
 		// Send stop command
-		if (FALSE == sendHttpRequest("STOP:".$devName.":") ) {
-			echo "Failed to send STOP request for KART<br>";
+		if (FALSE == sendHttpRequest("STOP:KART".$devId.":") ) {
+			echo "Failed to send STOP request for ".$devName."<br>".
+					"<br> Please check the connection with Server <br>";
 			$ret = FALSE;
 		}
-		($kart_drv_name['STARTED'.$devName]	= False);
+		($kart_session_data[$devId]->start(False));
 	} else {
-		$kart_drv_name[$devName] = $_POST[$textBoxName];
+		$kart_session_data[$devId] = new sessionData($devId, $_POST[$textBoxName]);
 		//cleanup the previous session for the device
-		cleanupSession ($devName);
+		//cleanupSession ($devId);
 		// Send Start command
-		if (FALSE == sendHttpRequest("START:".$devName.":") ) {
-			echo "Failed to send START request for KART <br>";
+		if (FALSE == sendHttpRequest("START:KART".$devId.":") ) {
+			echo "Failed to send START request for kart".$devId.
+					"<br> Please check the connection with Server <br>";
 			$ret = FALSE;
+			//return FALSE;
+		} else {
+			($kart_session_data[$devId]->start(True));
 		}
-		($kart_drv_name['STARTED'.$devName] = True);
 	}
-
+	//var_dump($GlobalData);
 	// store the config
-	file_put_contents('config.php', '<?php return ' . var_export($kart_drv_name, true) . '; ?>');
+	file_put_contents('data_config.php', '<?php return ' . var_export(serialize($GlobalData), true) . '; ?>', LOCK_EX);
+	file_put_contents('data_session.php', '<?php return ' . var_export(serialize($kart_session_data), true) . '; ?>', LOCK_EX);		
 	return $ret;
 }
 
 //$Started = False;
 for ($i = 1; $i <= MAX_KART_NUM; $i++) {
 	if ( isset($_POST["Dev".$i."Btn"])){
-		handleSwitch ('KART'.$i, 'kart'.$i.'Text');
+		handleSwitch ($i, 'kart'.$i.'Text');
 	}
 }
 
 if (isset($_POST["newBtn"])) {
 	//echo ("new session: <br/>\n\n");
 	// cleanup the session data
-	cleanupSession ("all");
+	cleanupSession (-1); /* To clean up all session ids */
 	// store the config
-	file_put_contents('config.php', '<?php return ' . var_export($kart_drv_name, true) . '; ?>');
+	file_put_contents('data_session.php', '<?php return ' . var_export(serialize($kart_session_data), true) . '; ?>', LOCK_EX);			
+}
+
+/* This will clear everything */
+if (isset($_POST["clearAllBtn"])) {
+	// cleanup the session data
+	cleanupSession (-1); /* To clean up all session ids */
+	$GlobalData = new globalData(("Server" != $_POST['serverName'])?$_POST['serverName']:"",
+						("Ip" != $_POST['serverIp'])?$_POST['serverIp']:"",
+						("Port" != $_POST['serverPort'])?$_POST['serverPort']:"");	
+	// store the config
+	file_put_contents('data_session.php', '<?php return ' . var_export(serialize($kart_session_data), true) . '; ?>', LOCK_EX);
+	file_put_contents('data_config.php', '<?php return ' . var_export(serialize($GlobalData), true) . '; ?>', LOCK_EX);		
+}
+
+if (isset($_POST["editBtn"])) {
+	//cannot change server details if session started
+	if($GlobalData->isStarted() === FALSE) {
+		if ($GlobalData->inEdit != TRUE) {
+			$GlobalData->inEdit = TRUE;
+		} else {
+			/* This is submit */
+			$GlobalData->updateServer((("Server" != $_POST['serverName'])?$_POST['serverName']:""),
+						(("Ip" != $_POST['serverIp'])?$_POST['serverIp']:""),
+						(("Port" != $_POST['serverPort'])?$_POST['serverPort']:""));
+			$GlobalData->inEdit = FALSE;
+			//var_dump($GlobalData);			
+		}
+		file_put_contents('data_config.php', '<?php return ' . var_export(serialize($GlobalData), true) . '; ?>', LOCK_EX);	
+	}
 }
 ?>
 
@@ -392,19 +412,24 @@ if (isset($_POST["newBtn"])) {
 			echo "<tr>";
 			echo "<td class=\"tg-5rcs\" align=\"center\">".$i."</td>";
 			echo "<td class=\"tg-5rcs\"><input type=\"text\" size=\"20\"";
-			echo "Value=\"".$kart_drv_name['KART'.$i]."\" name=\"kart".$i."Text\"";
-			echo "maxlength=\"15\" style=\"background-color: #D2E4FC;\"";
-			if($kart_drv_name['STARTEDKART'.$i] == True){echo "disabled />";} else {echo "/>";};
+			echo "Value=\"".$kart_session_data[$i]->drvName."\" name=\"kart".$i."Text\"";
+			echo "maxlength=\"15\" ";
+			if($kart_session_data[$i]->isStarted() == True){echo "style=\"background-color: #D2E4FC;\"disabled />";} else {echo "/>";};
 			echo "</td>";
 			echo "<td class=\"tg-sh0f\" align=\"center\"><input type=\"submit\"";
-			if($kart_drv_name['STARTEDKART'.$i] == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";}
+			if($kart_session_data[$i]->isStarted() == False){echo "class=\"button\" ";} else {echo "class=\"button2\"";}
 			echo "name=\"Dev".$i."Btn\"";
-			if($kart_drv_name['STARTEDKART'.$i] == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";}
+			if($kart_session_data[$i]->isStarted() == False){echo "Value=\"Start\" />";} else {echo "Value=\"Stop\" />";}
 			echo "</td>";
 			echo "<td class=\"tg-sh0f\" align=\"center\"><div id=\"lap_count".$i."\" align=\"center\"></div></td>";	
 			echo "<td class=\"tg-sh0f\" align=\"center\"><div id=\"battery_level".$i."\" align=\"center\"></div></td>";						
 			echo "</tr>";
 		}
+		echo "<tr><td colspan=\"2\" align=\"left\" style=\"border-right-width: 0px;\">";
+		echo "<input type=\"submit\" onclick=\"return confirmPopUp();\" Value=\"Clear All Data\" class=\"button\" name=\"clearAllBtn\" />";
+		echo "</td><td colspan=\"3\" align=\"right\" style=\"border-left-width: 0px;\">";
+		echo "<input type=\"submit\" Value=\"Clear Session\" class=\"button\" name=\"newBtn\" />";
+		echo "</td></tr>"		
 		?>
 	</table>
 	<br>
@@ -418,28 +443,67 @@ if (isset($_POST["newBtn"])) {
 			<td class="tg-if22">Port</td>
 		</tr>
 		<tr>
-			<td class="tg-5rcs"><input type="text" size=20
-				Value=<?php if (empty($kart_drv_name['SRV_NAME'])) {echo "Server";} else {echo $kart_drv_name['SRV_NAME'];} ?>
-				name="serverName" maxlength="15" style="background-color: #D2E4FC;"
-		<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
-			
-			</td>
-			<td class="tg-5rcs"><input type="text" size=20
-				Value=<?php if (empty($kart_drv_name['SRV_IP'])) {echo "Ip";} else {echo $kart_drv_name['SRV_IP'];} ?>
-				name="serverIp" maxlength="15" style="background-color: #D2E4FC;"
-		<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
-			
-			</td>
-			<td class="tg-5rcs"><input type="text" size=20
-				Value=<?php if (empty($kart_drv_name['SRV_PORT'])) {echo "Port";} else {echo $kart_drv_name['SRV_PORT'];} ?>
-				name="serverPort" maxlength="15" style="background-color: #D2E4FC;"
-		<?php if($Started == True){echo "disabled />";} else {echo "/>";} ?>
-			
-			</td>
-		</tr>
+		<?php 
+		global $GlobalData;
+			echo "<td class=\"tg-5rcs\"><input type=\"text\" size=20 Value=";				
+				if (empty($GlobalData->serverName)) 
+				{
+					echo "\"Server\"";
+				} else {
+					echo "\"".$GlobalData->serverName."\"";
+				}
+			echo "name=\"serverName\" maxlength=\"15\" ";
+				if($GlobalData->inEdit != True){
+					echo "style=\"background-color: #D2E4FC;\" disabled />";
+				} else {
+					echo "/>";
+				} 			
+			echo "</td>";
+			echo "<td class=\"tg-5rcs\"><input type=\"text\" size=20 Value=";
+				if (empty($GlobalData->serverIp)) {
+					echo "\"Ip\"";
+				} else {
+					echo "\"".$GlobalData->serverIp."\"";
+				}
+			echo "name=\"serverIp\" maxlength=\"15\" ";
+		 		if($GlobalData->inEdit != True){
+		 			echo "style=\"background-color: #D2E4FC;\" disabled />";
+		 		} else {
+		 			echo "/>";
+		 		}			
+			echo "</td>";
+			echo "<td class=\"tg-5rcs\"><input type=\"text\" size=20 Value=";
+				if (empty($GlobalData->serverPort)) {
+					echo "\"Port\"";
+				} else {
+					echo "\"".$GlobalData->serverPort."\"";
+				}
+			echo "name=\"serverPort\" maxlength=\"15\" ";
+				if($GlobalData->inEdit != True){
+					echo "style=\"background-color: #D2E4FC;\" disabled />";
+				} else {
+					echo "/>";
+				}
+			echo "</td>";
+		echo "</tr><tr>";
+		echo "<td colspan=\"3\" align=\"right\">";
+		echo "<input type=\"submit\" Value=";
+			if ($GlobalData->inEdit == TRUE) {
+				echo "\"Submit\" class=\"button2\"";
+			} else {
+				echo "\"Edit\" class=\"button\"";
+			}
+		echo "name=\"editBtn\" " ;
+			if ($GlobalData->isStarted() == TRUE) {
+				echo "disabled />";
+			}else {
+				echo "/>";
+			}			
+		echo "</td></tr>";
+		//var_dump($GlobalData);
+		?>
 	</table>
-	<br> <input type="submit" Value="New Session" class="button"
-		name="newBtn" />
+	<br>
 </form>
 
 <body>
@@ -452,6 +516,9 @@ if (isset($_POST["newBtn"])) {
 
 <script type="text/javascript" src="jquery-1.11.2.min.js"> </script>
 <script>
+function confirmPopUp() {
+    return confirm("This will clear all data including historical data!\nClick OK to confirm");
+}
 var auto_refresh = setInterval( function () {
 	$.ajax( {
 		url : 'status_query.php',

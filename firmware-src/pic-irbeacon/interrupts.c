@@ -21,6 +21,7 @@
 #include "user.h"
 
 volatile unsigned short devId  = 0x0;
+volatile unsigned short comp  = 0x0;
 volatile unsigned short cfgMode= 0x0;
 volatile unsigned short tmr1IntCount = 0x0;
 //unsigned short tmr0IntCount = 0x0;
@@ -30,7 +31,7 @@ void interrupt HiIsr(void)
     if (INTCONbits.RAIE && INTCONbits.RAIF)	{	// check the interrupt on change flag
         INTCONbits.RAIE = 0;
 		__delay_ms(200);						//check for key debounce
-		if(!KEY_1) {
+		if(!KEY_4) {
             //IND_LED ^=1;                // Toggle the LED
             handleSwitch();
 		}
@@ -64,10 +65,13 @@ void interrupt HiIsr(void)
             tmr1IntCount = 0;     // 5Sec
             cfgMode      = 0;
             /* COnfig timeout. Save the config devInt to EEPROM */
+            devId &= 0x03;
             eeprom_write (0x00, devId);
             /* blink the Leds DevID numbers to give feedback of programmed devId*/
-            __delay_ms(200);
-            blinkLed(devId);
+            __delay_ms(500);
+            blinkLed(devId + 1);
+            //comp = (devId << 4)|((~devId)&0x0F);
+            //comp = comp|((~devId)&0x0F);
             GIE  = 1;            // Global interrup enable
         }
         
@@ -113,7 +117,7 @@ void handleSwitch()
         /* If in programming mode, increment devId */
         IND_LED = 0;
         devId++;             
-        while (!KEY_1){__delay_ms(20);};
+        while (!KEY_4){__delay_ms(20);};
         
         /* Restart Timer1 for 5Sec*/
         TMR1RESTART ();
@@ -134,7 +138,7 @@ void handleSwitch()
                 /* Start the 5Sec timer1 to unset config mode*/
                 TMR1RESTART ();
             }
-        } while (!KEY_1);
+        } while (!KEY_4);
     }     
     //IND_LED = 0;        // turn OFF led     
     return;

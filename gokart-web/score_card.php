@@ -400,7 +400,13 @@
 			<td style="vertical-align: top; width: 20%;">
 				<table class="tg">
 					<tr>
-						<td class="tg-if-best" colspan="3">Best of Today</td>
+						<td class="tg-if-best" colspan="4">Best of Today</td>						
+					</tr>
+					<tr>
+					<td style="border-right-width: 0px; text-align:center">Pos</td>
+					<td style="border-right-width: 0px; border-left-width: 0px;  text-align:center">Name</td>
+					<td style="border-right-width: 0px; border-left-width: 0px; text-align:center">Time</td>
+					<td style="border-left-width: 0px; text-align:center">On</td>
 					</tr>
 					<?php 
 					global $GlobalData;
@@ -409,7 +415,7 @@
 					if (!empty($dayBestList)) {
 						for ($i = 0; (($i < 5)&&($dayBestList[$i]['laptime'] < MAX_TIME)); $i++) {
 							echo "<tr>";
-							//echo "<td style=\"border-right-width: 0px;\">".($i+1)."</td>";
+							echo "<td style=\"border-right-width: 0px; text-align:center\">".($i+1)."</td>";
 							//Name
 							echo "<td style=\"text-align: center; border-right-width: 0px; border-left-width: 0px;\">".
 							$dayBestList[$i]['name']."</td>";
@@ -426,13 +432,19 @@
 				<table class="tg">
 					<?php
 					global $GlobalData;					
-					echo "<tr><td class=\"tg-if-best\" colspan=\"3\">Best of ".date('F')."</td></tr>";					
+					echo "<tr><td class=\"tg-if-best\" colspan=\"4\">Best of ".date('F')."</td></tr>";	
+					echo "<tr>";
+					echo "<td style=\"border-right-width: 0px; text-align:center\">Pos</td>";
+					echo "<td style=\"border-right-width: 0px; border-left-width: 0px;  text-align:center\">Name</td>";
+					echo "<td style=\"border-right-width: 0px; border-left-width: 0px; text-align:center\">Time</td>";
+					echo "<td style=\"border-left-width: 0px; text-align:center\">On</td>";
+					echo "</tr>";									
 					$monthBestList = $GlobalData->getMonthBestList();
 					//var_dump ($dayBestList);
 					if (!empty($monthBestList)) {
 						for ($i = 0; (($i < 5)&&($monthBestList[$i]['laptime'] < MAX_TIME)); $i++) {
 							echo "<tr>";
-							//echo "<td style=\"border-right-width: 0px;\">".($i+1)."</td>";
+							echo "<td style=\"border-right-width: 0px; text-align:center\">".($i+1)."</td>";
 							//Name
 							echo "<td style=\"text-align: center; border-right-width: 0px; border-left-width: 0px;\">".
 							$monthBestList[$i]['name']."</td>";
@@ -449,13 +461,19 @@
 				<table class="tg">
 					<?php 
 					global $GlobalData;					
-					echo "<tr><td class=\"tg-if-best\" colspan=\"3\">Best of ".date("Y")."</td></tr>";									
+					echo "<tr><td class=\"tg-if-best\" colspan=\"4\">Best of ".date("Y")."</td></tr>";			
+					echo "<tr>";
+					echo "<td style=\"border-right-width: 0px; text-align:center\">Pos</td>";
+					echo "<td style=\"border-right-width: 0px; border-left-width: 0px;  text-align:center\">Name</td>";
+					echo "<td style=\"border-right-width: 0px; border-left-width: 0px; text-align:center\">Time</td>";
+					echo "<td style=\"border-left-width: 0px; text-align:center\">On</td>";
+					echo "</tr>";											
 					$yearBestList = $GlobalData->getYearBestList();
 					//var_dump ($yearBestList);
 					if (!empty($yearBestList)) {
 						for ($i = 0; (($i < 5)&&($yearBestList[$i]['laptime'] < MAX_TIME)); $i++) {
 							echo "<tr>";
-							//echo "<td style=\"border-right-width: 0px;\">".($i+1)."</td>";
+							echo "<td style=\"border-right-width: 0px; text-align:center\">".($i+1)."</td>";
 							//Name
 							echo "<td style=\"text-align: center; border-right-width: 0px; border-left-width: 0px;\">".
 							$yearBestList[$i]['name']."</td>";
@@ -463,7 +481,7 @@
 							echo "<td style=\"text-align: center; border-left-width: 0px; border-right-width: 0px;\">".
 							(int)($yearBestList[$i]['laptime']/60).":".($yearBestList[$i]['laptime'] - (int)($yearBestList[$i]['laptime']/60))."</td>";
 							echo "<td style=\"text-align: center; border-left-width: 0px;\">".
-							date("d-m-Y", $yearBestList[$i]['time'])."</td>";								
+							date("jS M", $yearBestList[$i]['time'])."</td>";								
 							echo "</tr>";
 						}
 					}

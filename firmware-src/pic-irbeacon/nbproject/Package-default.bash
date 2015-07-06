@@ -10,9 +10,9 @@ CND_CONF=default
 CND_DISTDIR=dist
 TMPDIR=build/${CND_CONF}/${IMAGE_TYPE}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=dist/${CND_CONF}/${IMAGE_TYPE}/GoKartLapTimer-IRXmit.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
-OUTPUT_BASENAME=GoKartLapTimer-IRXmit.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
-PACKAGE_TOP_DIR=gokartlaptimer-irxmit.x/
+OUTPUT_PATH=dist/${CND_CONF}/${IMAGE_TYPE}/GokartIRbeacon.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
+OUTPUT_BASENAME=GokartIRbeacon.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
+PACKAGE_TOP_DIR=gokartirbeacon.x/
 
 # Functions
 function checkReturnCode
@@ -57,15 +57,15 @@ mkdir -p ${TMPDIR}
 
 # Copy files and create directories and links
 cd "${TOP}"
-makeDirectory ${TMPDIR}/gokartlaptimer-irxmit.x/bin
+makeDirectory ${TMPDIR}/gokartirbeacon.x/bin
 copyFileToTmpDir "${OUTPUT_PATH}" "${TMPDIR}/${PACKAGE_TOP_DIR}bin/${OUTPUT_BASENAME}" 0755
 
 
 # Generate tar file
 cd "${TOP}"
-rm -f ${CND_DISTDIR}/${CND_CONF}/package/gokartlaptimer-irxmit.x.tar
+rm -f ${CND_DISTDIR}/${CND_CONF}/package/gokartirbeacon.x.tar
 cd ${TMPDIR}
-tar -vcf ../../../../${CND_DISTDIR}/${CND_CONF}/package/gokartlaptimer-irxmit.x.tar *
+tar -vcf ../../../../${CND_DISTDIR}/${CND_CONF}/package/gokartirbeacon.x.tar *
 checkReturnCode
 
 # Cleanup

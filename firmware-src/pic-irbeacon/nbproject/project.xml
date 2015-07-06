@@ -3,8 +3,8 @@
     <type>com.microchip.mplab.nbide.embedded.makeproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
-            <name>GoKartLapTimer-IRXmit</name>
-            <creation-uuid>14f24df3-8a54-4ca1-b0ec-1c1e24a9449e</creation-uuid>
+            <name>GokartIRbeacon</name>
+            <creation-uuid>28d9562c-04bc-4ca4-aa2c-3a0e05f0002d</creation-uuid>
             <make-project-type>0</make-project-type>
             <c-extensions>c</c-extensions>
             <cpp-extensions/>

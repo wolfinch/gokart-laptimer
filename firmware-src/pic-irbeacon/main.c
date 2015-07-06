@@ -16,10 +16,12 @@
 
 
 /* Initialize EEPROM */
-__EEPROM_DATA(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+__EEPROM_DATA(0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
 /* Dev_id*/
 extern volatile unsigned short devId;
 extern volatile unsigned short cfgMode;
+//extern volatile unsigned short comp;
+
 
 void main()
 {
@@ -29,7 +31,10 @@ void main()
     /* Read config */
     devId = eeprom_read(0x00);
     
-    blinkLed(devId);
+    //comp = (devId << 4);
+    //comp = (comp)|((~devId)&0x03);
+    blinkLed(devId+1);
+    
 
 	while(1)
 	{
@@ -38,7 +43,7 @@ void main()
         if(devId && !cfgMode) {
             sendFrame(devId, DATA_KEY_1);
         }
-        //__delay_ms(60);
+        //__delay_ms(2);
     }
 }
 

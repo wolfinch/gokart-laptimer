@@ -49,7 +49,7 @@
 <title>Gokart Session</title>
 <style type="text/css">
 body {
-	background-image: url("f1-bg.jpg");
+	background-image: url("f1-bg-logo.jpg");
 	background-repeat: no-repeat;
 	background-size: cover;
 }

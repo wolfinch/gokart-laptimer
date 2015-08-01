@@ -132,6 +132,9 @@ nrf24_mod_init() {
 
     /* Set the transmit address */
     nrf24_tx_address(tx_mac);
+    
+    /* Keep it powered down*/
+    nrf24_powerDown();
 }
 
 uint8_t 
@@ -150,12 +153,11 @@ read_battery_level (void) {
 
 void ADCInit () {
    // ADCS    = 0b001;      // ADC Clock Fosc/8 - 2uS conversion Time
-    ADCON1    = 0b00010000; //ADCS    = 0b010;
+    ADCON1    = 0b00010000; //ADCS    = 0b001;
    // ADFM    = 0;        // MSB 7 bits in ADRESH   
    // ADON    = 1;        // ADC ON/OFF
-    ADCON0 = 0b00001101; // ADFM =0, VCFG =0, CHS=0011(AN3), GO|ADON = 01
-    ADIF   = 0;          // Clear Flag indicating conversion.    
-
+    ADCON0 = 0b00000001; // ADFM =0, VCFG =0, CHS=0000(AN0), GO|ADON = 01
+    ADIF   = 0;          // Clear Flag indicating conversion.
 }
 
 void HallInit () {
@@ -174,7 +176,7 @@ void InitApp(void) {
     /* Set clock freq of Int Osc*/
     OSCCONbits.IRCF = 0x6; //4MHz Internal
     /* Turn OFF unwanted Modules*/
-    ANSEL = 0b00001000; // Analog OFF except AN3 (RA4)) - ADC
+    ANSEL = 0b00000001; // Analog OFF except AN0 (RA0)) - ADC
     ANSELH = 0;
     CCP1CONbits.CCP1M = 0x0; // CCP module is off pins in Digital I/O
     C1ON = 0; // COmparators are off
@@ -188,17 +190,17 @@ void InitApp(void) {
     OPTION_REGbits.nRABPU = 0; // Weak pullup enable for all i/p pins in PORT-A/B   
     OPTION_REGbits.INTEDG = 1;
     /* Initialize port states*/
-    TRISB = 0b10010000; // On PortB, RB6(SPI) must be clear.
-    TRISA = 0b00111101; // on PortA, set i/p - RA0(KEY), RA2 (HALL), RA4(BAT), RA5 (RA3 is always2, i/p only - IR)
-    TRISC = 0b00000000; //bit 7 must be clear for SPI (SDO), RC6 - CSN
+    TRISB = 0b00010000; // On PortB, RB6(SPI-SCK) must be clear, RB4 (SPI-SDI) set, RB7 UART-TX.
+    TRISA = 0b00001111; // on PortA, set i/p - RA1(KEY), RA2 (HALL), RA0(BAT), (RA3 is always, i/p only - IR)
+    TRISC = 0b00000000; //bit 7 must be clear for SPI (SDO-RC7), RC6 - CSN, RC5 (LED)
 
-
-    PORTB = 0b11000000;
-    PORTA = 0b00000101; // Set the init Pin Values    
-    WPUAbits.WPUA0 = 1; // WPU enabled on RA0 KEY_1
-    WPUAbits.WPUA5 = 1; // WPU RA5
-    IOCA0 = 1; // IOC enabled on RA0
-    IOCA5 = 1; // IOC for RA5
+    PORTC = 0b00000000;
+    PORTB = 0b00000000;
+    PORTA = 0b00000000; // Set the init Pin Values    
+    WPUAbits.WPUA1 = 1; // WPU enabled on RA1 KEY_1
+    //WPUAbits.WPUA5 = 1; // WPU RA5
+    IOCA1 = 1; // IOC enabled on RA1-KEY1
+    IOCA3 = 1; // IOC for RA3-IR
     
     IrInit();
     HallInit();

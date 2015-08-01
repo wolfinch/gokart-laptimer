@@ -56,11 +56,11 @@ extern "C" {
  * 
  * Trigger Switch:
  * ===============
- * RA0 (13) - IOC (weak pullup)
+ * RA1 (13) - IOC (weak pullup)
  * 
  * Notif LED:
  * ==========
- * RA1 (18)
+ * RC5 (18)
  *  
  */
 
@@ -81,11 +81,11 @@ extern "C" {
 #define CE  	PORTCbits.RC3		//SPI_CE
 
 #define SENSOR_IR       PORTAbits.RA3       // IR Sensor connected (???) (to use IOC)     //FIXME: CLOCK IN, can't be used in LP
-#define SENSOR_BATT     PORTAbits.RA4       // Battery level ind connected (9v) (ANSEL=1) //FIXME: CLOCK OUT, can't be used in LP
+#define SENSOR_BATT     PORTAbits.RA0       // Battery level ind connected (9v) (ANSEL=1) //FIXME: CLOCK OUT, can't be used in LP
 #define SENSOR_HALL  	PORTAbits.RA2		//Hall sensor input extINT available
-#define KEY_1           PORTAbits.RA0		//Push Switch Key_1
+#define KEY_1           PORTAbits.RA1		//Push Switch Key_1
         
-#define IND_LED PORTAbits.RA1       // Indicator LED (OUT)
+#define IND_LED PORTCbits.RC5       // Indicator LED (OUT)
     
 /*********TMR1 Time macros*********/
     /* The Fixed Frame beacon format uses Modified NEC code */
@@ -165,6 +165,7 @@ extern volatile uint8_t     data_valid_bitmap;
 #define data_unset(x) (data_valid_bitmap &= ~(1<<(x)))
 #define is_data_valid(x) (data_valid_bitmap & (1<<(x)))
 #define data_ready() (data_valid_bitmap)
+#define data_q_flush() (data_valid_bitmap = 0)
 
 typedef enum gim_detect_type_ {
      IR = 0,

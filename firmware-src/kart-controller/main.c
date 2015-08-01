@@ -79,6 +79,7 @@ void nrf24_send_detect_data(void ) {
                 data_next_rx_slot = d_cnt;
             }
             if (++d_cnt >= MAX_PAYLOAD_COUNT) {
+                nrf24_powerDown();
                 return;
             } else {
                 continue;
@@ -130,6 +131,7 @@ void nrf24_send_detect_data(void ) {
         } while (retry);
         
         if (++d_cnt >= MAX_PAYLOAD_COUNT) {
+            nrf24_powerDown();            
             return;
         }
     }
@@ -271,7 +273,7 @@ void main() {
     
     battery_level = read_battery_level();
 
-    xprintf("Dev Id 0x%x\r\n", devId);
+    xprintf("Dev Id 0x%x batLevel:0x%x\r\n", devId, battery_level);
 
     blinkLed(devId);
     xprintf("Init Complete\r\n");
@@ -318,9 +320,10 @@ void main() {
             //         nrf24_send_detect_data();
         }
 
-        /* If no activity for time more than 2mins, Let's power down and Sleep now.*/
-        if ((ir_cur_hit.sec + 240 < jiffies) && (hall_cur_hit.sec + 240 < jiffies ) && !data_ready()) {
+        /* If no activity for time more than 2mins, Let's power down flush-out the date (if any) and Sleep now.*/
+        if ((ir_cur_hit.sec + 50 < jiffies) && (hall_cur_hit.sec + 50 < jiffies )) {
             xprintf("--- Entering SLEEP mode!!---\r\n");
+            data_q_flush();
             nrf24_powerDown();
             jiffies = 0; // Reset the jiffies
             SLEEP ();

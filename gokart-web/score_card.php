@@ -287,7 +287,9 @@
 						$ir_lap_list   = $kart_info->irLapListGet();
 						$hall_lap_list = $kart_info->hallLapListGet();
 
-						if ( $kart_info->irLapCountGet() >= $kart_info->hallLapCountGet()) {
+						if ( ($kart_info->irLapCountGet() > $kart_info->hallLapCountGet()) || 
+								(($kart_info->irLapCountGet() == $kart_info->hallLapCountGet()) && 
+								($kart_info->irBestlapTimeGet() <= $kart_info->hallBestlapTimeGet()))) {
 							$best_lap_time = (int)(($kart_info->irBestlapTimeGet()/60)).":".
 							($kart_info->irBestLapTimeGet() -
 							(((int)($kart_info->irBestLapTimeGet()/60))*60));
@@ -314,9 +316,9 @@
 							$kart_session_data[$kart_num]->currLapCount = $kart_info->hallLapCountGet();
 														
 							//Update the historic best values
-							$GlobalData->insertIfBestLap($kart_info->irBestlapTimeGet(),
+							$GlobalData->insertIfBestLap($kart_info->hallBestlapTimeGet(),
 															$kart_session_data[$kart_num]->drvName);
-							}
+						}
 						$kart_session_data[$kart_num]->batLevel = $bat_level;
 							
 						//echo "<br>laplist count:".count($ir_lap_list)." <br>";

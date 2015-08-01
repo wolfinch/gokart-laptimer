@@ -66,7 +66,7 @@ class globalData {
 	 * Array will contain 6 laps, 6th one will not be logically correct */
 	private $dayBest 	;//= array();
 	private $monthBest  ;//= array();
-	private $yearBest 	= array();
+	private $yearBest 	;//= array();
 	private $lastPurgeTime;
 	
 	private function purgeOldBests() {
@@ -115,16 +115,17 @@ class globalData {
 		return 1;
 	}
 	
-	public function insertIfBestLap ($currLapTime, $name) {
-		/*See if the entry exists already */
-		if (FALSE !== $this->array_search(array('laptime'=>round($currLapTime, 3), 'name'=>$name), $this->dayBest)) {
-			//echo "already exists \n";
-			return;
-		}
-		
+	public function insertIfBestLap ($currLapTime, $name) {	
 		/*purge old best lists, in case */
 		//var_dump($this);
 		$this->purgeOldBests();
+		
+		/*See if the entry exists already */
+		if (FALSE !== $this->array_search(array('laptime'=>round($currLapTime, 3), 'name'=>$name), $this->dayBest)) {
+			echo "already exists: ". $name, " time:". $currLapTime."\n";
+			return;
+		}
+
 		/*Set Day's best */
 		$this->dayBest[5] = $this->monthBest[5] = $this->yearBest[5] = 
 						array('laptime'=>round($currLapTime, 3), 'name'=>$name, 'time'=>time());

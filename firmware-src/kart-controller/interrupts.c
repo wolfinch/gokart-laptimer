@@ -25,7 +25,7 @@ volatile uint8_t devId  = 0x0;
 volatile uint8_t comp  = 0x0;
 volatile uint8_t cfgMode= 0x0;
 volatile uint8_t tmr0IntCount = 0x0;
-volatile uint8_t ShouldSend = 0;
+//volatile uint8_t ShouldSend = 0;
 volatile uint8_t ir_cmd_valid = false;
 volatile uint8_t ir_cur_code  = 0;
 volatile uint8_t ir_state_pos = 0;
@@ -53,10 +53,12 @@ uint8_t  IR_state = true;       //IR Pin State
  *  b. Short press < 1Sec(program device id)
  */
 void handleSwitch() {
-    unsigned short cfgModeCounter = 0x0; // inc counter every 10Ms, 500 = 5Sec
+    unsigned int cfgModeCounter = 0x0; // inc counter every 10Ms, 500 = 5Sec
+    INTCONbits.T0IE = 0;
 
     if (cfgMode) {
         /* If in programming mode, increment devId */
+
         IND_LED = 0;
         devId++;
         while (!KEY_1) {
@@ -68,12 +70,13 @@ void handleSwitch() {
         /* Restart Timer1 for 5Sec*/
         //TMR1RESTART (0,0);
         tmr0IntCount = 1;
+        
         TMR0 = 0;
         INTCONbits.T0IF = 0;
         INTCONbits.T0IE = 1;
     } else {
         do {
-            if ((cfgModeCounter >= 250) && !cfgMode) {
+            if (!cfgMode && (cfgModeCounter >= 250) ) {
                 cfgMode = 1; // Enter config mode
                 devId = 0; // reset the device Id
                 IND_LED = 1;
@@ -85,6 +88,7 @@ void handleSwitch() {
             if (cfgMode) {
                 /* Start the 5Sec timer0 to unset config mode*/
                 tmr0IntCount = 1;
+                TMR0 = 0;
                 INTCONbits.T0IF = 0;
                 INTCONbits.T0IE = 1;
             }
@@ -245,8 +249,8 @@ handleIRsignal(void) {
     ir_state_pos++; //UP state-machine, if a valid state was detected.    
 }
 #endif
-
-inline void
+#if 0
+void
 handle_hall_cmd(void) {
     
     hall_cur_hit.sec    = jiffies;
@@ -262,30 +266,46 @@ handle_hall_cmd(void) {
     hall_lap_count++; // Set lap_count wraparound = 63
     data_count++; //new data to send
 }
+#endif
 
 void interrupt Isr(void)		
 {   
     GIE  = 0;              // Global interrupt disable
     if (INTE && INTF) {
         /* External INT, HALL SENSOR*/
-        handle_hall_cmd();
+        hall_cur_hit.sec = jiffies;
+        hall_cur_hit.m_sec = (TMR1H - 0xB); // Adjust preset;
+        data[data_rx_slot].battery_level = battery_level;
+        data[data_rx_slot].time = hall_cur_hit;
+        data[data_rx_slot].dev_id = devId;
+        data[data_rx_slot].detect_type = HALL;
+        data[data_rx_slot].detect_code = 0;
+        data[data_rx_slot].lap_count = hall_lap_count;
+        data_set(data_rx_slot);
+        data_rx_slot = data_next_rx_slot;
+        hall_lap_count++; // Set lap_count wraparound = 63
+        data_count++; //new data to send
+        //handle_hall_cmd();
+        /* Hall processing Done */
         hall_detect = true;
         INTF        = false;
     } else if (INTCONbits.RABIE && INTCONbits.RABIF)	{	// check the interrupt on change flag
-        //INTCONbits.RABIE = 0;
+        INTCONbits.RABIE = 0;
         if(SENSOR_IR^IR_state) {        //IR Pin State changed?
             IR_state = SENSOR_IR;
             handleIRsignal();
         } else if(!KEY_1) {
-            __delay_ms(200); //check for key debounce
+            __delay_ms(50); //check for key debounce
             //IND_LED ^=1;                // Toggle the LED
             handleSwitch();
-            ShouldSend = 1;             //Test Send on Keydown
-		}
+            //ShouldSend = 1;             //Test Send on Keydown
+		} else if (KEY_1) {
+            __delay_ms(50); //check for key debounce and ignore Key UP sequence
+        }
        
-		if(PORTA) {asm("nop");}             //this is requited to end the mismatch condition 
+		if(PORTA || PORTB) {asm("nop");}             //this is requited to end the mismatch condition 
         INTCONbits.RABIF = 0;                // clear the interrupt on chage flag
-        //INTCONbits.RABIE = 1;
+        INTCONbits.RABIE = 1;
 	} else if (PIR1bits.TMR1IF) {
         TMR1ON      = 0;        // Turn OFF TMR1
         TMR1H       = 0x0B;     // write 0xBDB so that INT is exact 500mS
@@ -303,8 +323,8 @@ void interrupt Isr(void)
             INTCONbits.T0IE = 0; //           -->> Turn OFF TIMER1
             //PIR1bits.TMR1IF = 0; // clear flag 
             //return;
-        } else if (tmr0IntCount) { // ~4sec  Sec. = 255 ints (init as 1 from handleSwitch)
-            tmr0IntCount++;
+        } else if (tmr0IntCount) { // ~4sec  Sec. = 255 ints (init as 1 from key (handleSwitch))
+            tmr0IntCount++;     
         } else {
             INTCONbits.T0IE = 0; //           -->> OFF TIMER1
             IND_LED = 0; // Turn OFF LED
@@ -313,11 +333,11 @@ void interrupt Isr(void)
             /* End Test */
             cfgMode = 0;
             /* COnfig timeout. Save the config devInt to EEPROM */
-            eeprom_write(0x00, (devId & 0x1F));
+            eeprom_write(0x00, (devId & 0xF));
             //comp = (devId << 4);
             //comp = (comp) | ((~devId)&0x0F);
             /* blink the Leds DevID numbers to give feedback of programmed devId*/
-            __delay_ms(200);
+            __delay_ms(500);
             blinkLed(devId);
             //comp = (devId << 4)|((~devId)&0x0F);
             //comp = comp|((~devId)&0x0F);

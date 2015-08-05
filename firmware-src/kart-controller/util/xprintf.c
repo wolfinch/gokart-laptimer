@@ -16,9 +16,17 @@
 
 #if _USE_XFUNC_OUT
 #include <stdarg.h>
+
+#ifndef DEBUG
+void xprintf (			/* Put a formatted string to the default device */
+	const char*	fmt,	/* Pointer to the format string */
+	...					/* Optional arguments */
+){
+    
+}
+#else
 void (*xfunc_out)(unsigned char);	/* Pointer to the output stream */
 static char *outptr;
-
 
 /*----------------------------------------------*/
 /* Put a character                              */
@@ -162,15 +170,6 @@ void xvprintf (
 	}
 }
 
-#define DEBUG
-#ifndef DEBUG
-void xprintf (			/* Put a formatted string to the default device */
-	const char*	fmt,	/* Pointer to the format string */
-	...					/* Optional arguments */
-){
-    
-}
-#else
 void xprintf (			/* Put a formatted string to the default device */
 	const char*	fmt,	/* Pointer to the format string */
 	...					/* Optional arguments */

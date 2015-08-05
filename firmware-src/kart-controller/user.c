@@ -27,7 +27,7 @@
 
 extern volatile uint8_t devId;
 
-
+#ifdef DEBUG
 void
 UART_Init(const long int baudrate)
 {
@@ -81,7 +81,10 @@ char UART_Read() {
     return RCREG; //Returns the 8 bit data
 }
 #endif
-
+#else
+void init_xdev_lib() {
+}
+#endif
 /* ------------------------------------------------------------------------- */
 void nrf24_setupPins()
 {

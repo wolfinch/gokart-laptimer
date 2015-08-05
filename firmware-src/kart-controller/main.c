@@ -13,11 +13,11 @@
 #include <stdbool.h>
 
 /* Initialize EEPROM */
-__EEPROM_DATA(0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+__EEPROM_DATA(0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
 /* Dev_id*/
 extern volatile uint8_t devId;
 extern volatile uint8_t cfgMode;
-extern volatile uint8_t ShouldSend;
+// extern volatile uint8_t ShouldSend;
 extern volatile uint8_t ir_cmd_valid;
 extern volatile uint8_t ir_cur_code;
 extern volatile uint8_t hall_detect;
@@ -283,7 +283,7 @@ void main() {
 //    rx_test();
 //#if 0
 	while(1)
-    {
+    {        
         handle_ir_cmd();
         
         /* if there is a signal hit, current data slot must be used up, get next slot*/
@@ -315,13 +315,13 @@ void main() {
             nrf24_send_detect_data();
         }
 
-        if (ShouldSend) {
-            ShouldSend = 0;
+       // if (ShouldSend) {
+         //   ShouldSend = 0;
             //         nrf24_send_detect_data();
-        }
+        //}
 
         /* If no activity for time more than 2mins, Let's power down flush-out the date (if any) and Sleep now.*/
-        if ((ir_cur_hit.sec + 50 < jiffies) && (hall_cur_hit.sec + 50 < jiffies )) {
+        if ((ir_cur_hit.sec + 1200 < jiffies) && (hall_cur_hit.sec + 1200 < jiffies )) {
             xprintf("--- Entering SLEEP mode!!---\r\n");
             data_q_flush();
             nrf24_powerDown();
@@ -330,7 +330,7 @@ void main() {
             battery_level = read_battery_level();
         }
         __delay_ms(60);
-    }        
+    }
 //#endif
 }
 

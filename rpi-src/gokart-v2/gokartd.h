@@ -30,7 +30,7 @@
 #define MAX_LAP_COUNT    64
 
 #define PISTILLPATH             "/usr/bin/raspistill"
-#define PISTILLARGS             "-vf -o "
+#define PISTILLARGS             "-w 720 -h 540 -q 20 -t 0 -e jpg -vf -o"
 #define OUTDIR                  "/etc/gokart/data/"
 #define PIDFILE                 "/etc/gokart/var/run/gokartd.pid"
 #define LOCKFILE                "/etc/gokart/var/run/lock"

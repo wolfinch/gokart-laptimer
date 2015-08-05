@@ -274,8 +274,8 @@ function sendHttpRequest_internal($cmd) {
 }
 
 function sendHttpRequest($cmd) {
-	//return sendHttprequest_internal($cmd);
-	return True;
+	return sendHttprequest_internal($cmd);
+	//return True;
 }
 
 // Cleanup session data

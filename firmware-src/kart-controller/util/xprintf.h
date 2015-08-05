@@ -13,8 +13,15 @@
 
 
 #if _USE_XFUNC_OUT
+
+/* Uncomment the Below line for enabling debugs and UART*/
+#define DEBUG
+
+#ifdef DEBUG
 #define xdev_out(func) xfunc_out = (void(*)(unsigned char))(func)
 extern void (*xfunc_out)(unsigned char);
+#endif
+
 void xputc (char c);
 void xputs (const char* str);
 void xfputs (void (*func)(unsigned char), const char* str);

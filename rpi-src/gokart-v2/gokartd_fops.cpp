@@ -37,7 +37,7 @@ gokart_snapapic(uint8_t kart_id, struct timeval *tv) {
     pid_t pid = 0;
     char img_path[128] = "";
 
-    snprintf(img_path, 64, "%s_kart%d_%lu.jpg", PISTILLARGS, kart_id, tv->tv_sec);
+    snprintf(img_path, 64, "%s kart%d_%lu.jpg", PISTILLARGS, kart_id, tv->tv_sec);
 
     log_print ("raspistill arg path: %s\n", img_path);
     pid = fork ();
@@ -161,7 +161,7 @@ gokart_process_data(void)
             fflush (this_kart->fp);
 
             /* take a snap */
-            gokart_snapapic (this_kart->kart_id, &(this_kart->curr_lap_time));
+            //gokart_snapapic (this_kart->kart_id, &(this_kart->curr_lap_time));
             /* ALL success */
             goto cleanup;
         }
@@ -226,7 +226,7 @@ gokart_process_data(void)
         fflush (this_kart->fp);
 
         /* take a snap */
-        gokart_snapapic (this_kart->kart_id, &(this_kart->curr_lap_time));
+        //gokart_snapapic (this_kart->kart_id, &(this_kart->curr_lap_time));
 
         /* Clean up for the current node */
         cleanup:

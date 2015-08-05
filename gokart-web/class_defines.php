@@ -122,7 +122,7 @@ class globalData {
 		
 		/*See if the entry exists already */
 		if (FALSE !== $this->array_search(array('laptime'=>round($currLapTime, 3), 'name'=>$name), $this->dayBest)) {
-			echo "already exists: ". $name, " time:". $currLapTime."\n";
+			//echo "already exists: ". $name, " time:". $currLapTime."\n";
 			return;
 		}
 

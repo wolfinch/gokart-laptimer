@@ -28,6 +28,7 @@
 
 extern uint16_t            resp_list_cnt;
 extern gim_response_list_t *resp_list_tail;
+extern FILE        *g_log_fd ;
 
 struct timeval max_tv = MAX_TIME;
 karts_t all_karts[MAX_KARTS][MAX_DET_TYPE][MAX_DET_CODE];

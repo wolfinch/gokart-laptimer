@@ -1,6 +1,13 @@
 <html>
 <head>
 <title>Gokart Session</title>
+<style type="text/css">
+body {
+	background-image: url("f1-bg-logo-front.jpg");
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+</style>
 </head>
 <style type="text/css">
 .tg {
@@ -203,7 +210,7 @@ input[type="text"]:disabled {
 <?php
 require_once 'class_defines.php';
 
-//error_reporting(E_ERROR | E_PARSE);
+error_reporting(E_ERROR | E_PARSE | E_NOTICE);
 
 global $kart_session_data ;
 global $GlobalData;
@@ -369,9 +376,9 @@ if (isset($_POST["newBtn"])) {
 if (isset($_POST["clearAllBtn"])) {
 	// cleanup the session data
 	cleanupSession (-1); /* To clean up all session ids */
-	$GlobalData = new globalData(("Server" != $_POST['serverName'])?$_POST['serverName']:"",
-						("Ip" != $_POST['serverIp'])?$_POST['serverIp']:"",
-						("Port" != $_POST['serverPort'])?$_POST['serverPort']:"");	
+	$GlobalData = new globalData($GlobalData->serverName,
+						$GlobalData->serverIp,
+						$GlobalData->serverPort);	
 	// store the config
 	file_put_contents('data_session.php', '<?php return ' . var_export(serialize($kart_session_data), true) . '; ?>', LOCK_EX);
 	file_put_contents('data_config.php', '<?php return ' . var_export(serialize($GlobalData), true) . '; ?>', LOCK_EX);		

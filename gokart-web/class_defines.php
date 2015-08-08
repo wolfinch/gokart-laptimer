@@ -1,8 +1,8 @@
 <?php
-define (MAX_TIME, 999999);
-define (MAX_KART_NUM, 8);
-define (DEFAULT_NAME, "Name");
-define(UPLOAD_DIR, "uploads/");
+define ('MAX_TIME', 999999);
+define ('MAX_KART_NUM', 8);
+define ('DEFAULT_NAME', "Name");
+define ('UPLOAD_DIR', "uploads/");
 
 global $GlobalData;
 date_default_timezone_set('Asia/Kolkata');
@@ -185,23 +185,25 @@ class kartInfo {
 	}
 	public function processLapData () {
 		/* Find total laptime (LastLap- Firstlap )*/
-		$this->irTotalLapTime = round($this->irLapTime[$this->irLapCount] - $this->irLapTime[0], 3);
-		$this->hallTotalLapTime = round($this->hallLapTime[$this->hallLapCount] - $this->hallLapTime[0], 3);
+		$this->irTotalLapTime = round(!empty($this->irLapTime[$this->irLapCount])?$this->irLapTime[$this->irLapCount]:0 -
+									  (!empty($this->irLapTime[0])?$this->irLapTime[0]:0), 3);
+		$this->hallTotalLapTime = round(!empty($this->hallLapTime[$this->hallLapCount])?$this->hallLapTime[$this->hallLapCount]:0 - 
+										(!empty($this->hallLapTime[0])?$this->hallLapTime[0]:0), 3);
 
 		/* Find best laptime */
 		$prevLapTime = 0;
 		for($lapNum=0; $lapNum <= $this->irLapCount; $lapNum++) {
 			//echo "<br>lapNum".$lapNum;
-			if (($prevLapTime != 0) && ($this->irLapTime[$lapNum] != 0)) { // !First lap hit
+			if (($prevLapTime != 0) && !empty($this->irLapTime[$lapNum]) && ($this->irLapTime[$lapNum] != 0)) { // !First lap hit
 				if ($this->irBestLapTime <= 0) {
-					$this->irBestLapTime = round(($this->irLapTime[$lapNum] - $prevLapTime), 3);
-				} else if (($this->irLapTime[$lapNum] - $prevLapTime) != 0 &&
-				(($this->irLapTime[$lapNum] - $prevLapTime) < $this->irBestLapTime)) {
-					$this->irBestLapTime = round(($this->irLapTime[$lapNum] - $prevLapTime), 3) ;
+					$this->irBestLapTime = round(((!empty($this->irLapTime[$lapNum])?$this->irLapTime[$lapNum]:0) - $prevLapTime), 3);
+				} else if (((!empty($this->irLapTime[$lapNum])?$this->irLapTime[$lapNum]:0) - $prevLapTime) != 0 &&
+				(((!empty($this->irLapTime[$lapNum])?$this->irLapTime[$lapNum]:0) - $prevLapTime) < $this->irBestLapTime)) {
+					$this->irBestLapTime = round(((!empty($this->irLapTime[$lapNum])?$this->irLapTime[$lapNum]:0) - $prevLapTime), 3) ;
 					$this->irBestLapNum = $lapNum ;
 				}
 			}
-			if ($this->irLapTime[$lapNum] != 0) {
+			if (!empty($this->irLapTime[$lapNum]) && $this->irLapTime[$lapNum] != 0) {
 				$prevLapTime = $this->irLapTime[$lapNum];
 			}
 		}
@@ -209,16 +211,16 @@ class kartInfo {
 		$prevLapTime = 0;
 		for($lapNum=0; $lapNum <= $this->hallLapCount; $lapNum++) {
 			//echo "<br>lapNum".$lapNum."time:".$this->hallLapTime[$lapNum];
-			if (($prevLapTime != 0) && ($this->hallLapTime[$lapNum] != 0)) { // !First lap hit
+			if (($prevLapTime != 0) && (!empty($this->hallLapTime[$lapNum]))) { // !First lap hit
 				if ($this->hallBestLapTime <= 0) {
 					$this->hallBestLapTime = round(($this->hallLapTime[$lapNum] - $prevLapTime), 3);
-				} else if (($this->hallLapTime[$lapNum] - $prevLapTime) != 0 &&
-				(($this->hallLapTime[$lapNum] - $prevLapTime) < $this->hallBestLapTime)) {
+				} else if (((!empty($this->hallLapTime[$lapNum])?$this->hallLapTime[$lapNum]:0) - $prevLapTime) != 0 &&
+				((!empty($this->hallLapTime[$lapNum])?$this->hallLapTime[$lapNum]:0 - $prevLapTime) < $this->hallBestLapTime)) {
 					$this->hallBestLapTime = round(($this->hallLapTime[$lapNum] - $prevLapTime), 3) ;
 					$this->hallBestLapNum = $lapNum ;
 				}
 			}
-			if ($this->hallLapTime[$lapNum] != 0) {
+			if (!empty($this->hallLapTime[$lapNum] )) {
 				$prevLapTime = $this->hallLapTime[$lapNum];
 			}
 		}

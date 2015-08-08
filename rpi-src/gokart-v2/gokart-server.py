@@ -15,14 +15,14 @@ START_CNT   = 0
 def CleanupRundata (self, devName):
     if (devName == "ALL"):
         if (0 != os.system("rm "+RUN_DATA+"*") ):
-            self.send('\nfailed to cleaned up dev:'+devName)
+            #            self.send('\nfailed to cleaned up dev:'+devName)
             print('\nfailed to cleaned up dev:'+devName)
         else:
             #            self.send('stopped gokartd\n')
             print('\ncleaned up dev:'+devName)
     else:
         if (0 != os.system("rm "+RUN_DATA+devName+"_*") ):
-            self.send('\nfailed to cleaned up dev:'+devName)
+            #            self.send('\nfailed to cleaned up dev:'+devName)
             print('\nfailed to cleaned up dev:'+devName)
         else:
             #            self.send('stopped gokartd\n')
@@ -44,7 +44,10 @@ def StartOrStopCmd (self, start, dev):
             else:
 #               self.send('started gokartd\n')
                 print('started gokartd\n')
-        START_CNT+=1
+                START_CNT+=1
+        else:
+            #Don't start, just increment start count
+            START_CNT+=1
     else:
         print 'Stopping gokartd!!\n'
         self.send('Stopping gokartd\n')
@@ -53,7 +56,7 @@ def StartOrStopCmd (self, start, dev):
         if (START_CNT <= 0):
             START_CNT = 0
             if (0 != os.system("service gokart stop") ):
-                self.send('Failed to stop gokartd\n')
+#                self.send('Failed to stop gokartd\n')
                 print('Failed to stop gokartd\n')
             else:
 #               self.send('stopped gokartd\n')

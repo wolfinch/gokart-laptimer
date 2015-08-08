@@ -155,6 +155,7 @@
 					</tr>
 					<?php
 					require_once 'class_defines.php';
+					error_reporting(E_ERROR | E_PARSE | E_NOTICE);
 					
 					$result_array = array();
 					global $kart_session_data;
@@ -228,7 +229,7 @@
 							//sscanf($kart_name, "KART%d", );
 							//echo $kart_name,"<br>",$kart_num,"<br>";
 
-							if ($result_array[$kart_num] == null) {
+							if (empty($result_array[$kart_num])) {
 								//echo "<br> new kartinfo:".$kart_num."<br";
 								$result_array[$kart_num] = new kartInfo($kart_num);
 							}
@@ -339,18 +340,16 @@
 							echo "<tr>";
 							echo "<td class=\"tg-if20-noborder\"></td>";
 							echo "<td class=\"tg-if20-noborder\"></td>";
-							if ($j == 0) {
-								echo "<td class=\"tg-if20-noborder\"  rowspan=\"4\"></td>";
-							}
+							echo "<td class=\"tg-if20-noborder\" ></td>";
 							$k = $i;
 							$ir_lap_time   = 0;
 							$hall_lap_time = 0;
 							while($k) {
 								$k--;
-								if (($ir_lap_time == 0) && $ir_lap_list[$k] && $ir_lap_list[$i]) {
+								if (($ir_lap_time == 0) && !empty($ir_lap_list[$k]) && !empty($ir_lap_list[$i])) {
 									$ir_lap_time = round($ir_lap_list[$i] - $ir_lap_list[$k], 3);
 								}
-								if (($hall_lap_time == 0) && $hall_lap_list[$k] && $hall_lap_list[$i]) {
+								if (($hall_lap_time == 0) && !empty($hall_lap_list[$k]) && !empty($hall_lap_list[$i])) {
 									$hall_lap_time = round($hall_lap_list[$i] - $hall_lap_list[$k], 3);
 								}
 									

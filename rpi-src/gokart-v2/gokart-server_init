@@ -23,7 +23,7 @@ DAEMON_OPTS=""
 DAEMON_USER=root
  
 # The process ID of the script when it runs is stored here:
-PIDFILE=/etc/gokart/var/run/$DAEMON_NAME.pid
+PIDFILE=/var/run/$DAEMON_NAME.pid
  
 . /lib/lsb/init-functions
  

@@ -1,18 +1,21 @@
 <?php
-define (MAX_KART_NUM, 8);
+require_once 'class_defines.php';
 global $kart_session_data;
 global $kart_cfg_data;
 
-$UPLOAD_DIR = "/var/www/uploads/";
+$UPLOAD_DIR = "uploads/";
 $kart_session_data  = unserialize(include($_SERVER['DOCUMENT_ROOT']."/data_session.php"));
 $kart_cfg_data 		= unserialize(include($_SERVER['DOCUMENT_ROOT']."/data_config.php"));
 
 function sendHttpRequest_internal($cmd) {
 	global $kart_session_data;
-
+	global $kart_cfg_data;
+	
+	//var_dump($kart_cfg_data);
+	
 	if (empty($kart_cfg_data->serverIp)) {
 		if(empty($kart_cfg_data->serverName)) {
-			echo "invalid hostname and ip:".$kart_cfg_data->serverName."<br>";
+			echo "invalid hostname and ip:".$kart_cfg_data->serverName.", ip:",$kart_cfg_data->serverIp," <br>";
 			return FALSE;
 		}
 		$host_ip = gethostbyname ($kart_cfg_data->serverName);

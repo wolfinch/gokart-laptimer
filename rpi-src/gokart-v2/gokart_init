@@ -5,8 +5,8 @@
 #
 # description: gokartd gathers statistics about the system stores this information
 # processname: gokartd
-# pidfile: /etc/gokart/var/run/gokartd.pid
-# config:  /etc/gokart/etc/gokartd.conf
+# pidfile: /var/run/gokartd.pid
+# config:  /var/run/gokartd.conf
 # command: /etc/gokart/sbin/gokartd
 # rundata: /etc/gokart/data/
 ### BEGIN INIT INFO
@@ -19,8 +19,8 @@
 # Description:       gokartd
 ### END INIT INFO
 CONFIG_FILE=/etc/gokart/gokartd.conf
-PID_FILE=/etc/gokart/var/run/gokartd.pid
-LOCK_FILE=/etc/gokart/var/run/lock
+PID_FILE=/var/run/gokartd.pid
+LOCK_FILE=/var/run/gokartd.lock
 CMD_FILE=/etc/gokart/sbin/gokartd
 RUN_DATA=/etc/gokart/data/
 case "$1" in

@@ -243,7 +243,7 @@ int main (int argc, char *argv[])
     radio.printDetails();
 
     if (daemonize) {
-        if (daemon(0, 0) == -1) {
+        if (daemon(0, 1) == -1) {
             fprintf(stderr, "%s: can't daemonize\n", progname);
             exit(-1);
         }

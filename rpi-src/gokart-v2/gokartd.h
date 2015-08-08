@@ -32,24 +32,28 @@
 #define PISTILLPATH             "/usr/bin/raspistill"
 #define PISTILLARGS             "-w 720 -h 540 -q 20 -t 0 -e jpg -vf -o"
 #define OUTDIR                  "/etc/gokart/data/"
-#define PIDFILE                 "/etc/gokart/var/run/gokartd.pid"
-#define LOCKFILE                "/etc/gokart/var/run/lock"
+#define PIDFILE                 "/var/run/gokartd.pid"
+#define LOCKFILE                "/var/run/gokartd.lock"
 #define LOGFILE                 "/etc/gokart/var/gokartd.log"
 
 #define GOKARTD_VERSION "gokartd v1.1"
 
-#define DEBUG_NO
+#define DEBUG
 #ifndef DEBUG
 #define log_print(args...) { \
             printf (args);   \
         };
 #else
 #define log_print(args...) { \
-        fprintf(g_log_fd, args); \
-        fflush (g_log_fd); \
 };
 #endif
 
+/*
+#define log_print(args...) { \
+        printf(g_log_fd, args); \
+        fflush (g_log_fd); \
+};
+*/
 typedef enum gim_detect_type_ {
      IR = 0,
      HALL,

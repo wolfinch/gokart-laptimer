@@ -35,5 +35,3 @@ C) Test the transponder/Detector functionality
  
 
 # Ips of systems in the network can be found using android app "fing" with the phone connected to same network
-
-nk@CI
